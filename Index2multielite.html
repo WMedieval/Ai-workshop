@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏗️ BauMind AI – Multi-Lingual</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        /* ===== OSNOVNI STILOVI ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, system-ui, sans-serif; }
+        body { background: #0d0d0d; color: #e0e0e0; min-height: 100vh; display: flex; flex-direction: column; }
+        .container { max-width: 1400px; margin: 0 auto; width: 100%; padding: 20px; }
+        
+        /* ===== LANGUAGE SELECTOR SCREEN ===== */
+        #langScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, #1a120a, #050505);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease;
+        }
+        #langScreen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #langScreen .logo {
+            font-size: 52px;
+            font-weight: 900;
+            margin-bottom: 10px;
+            letter-spacing: -2px;
+        }
+        #langScreen .logo span { background: linear-gradient(135deg, #c87a2b, #e8a84c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        #langScreen .logo i { color: #c87a2b; font-size: 48px; margin-right: 12px; }
+        #langScreen .subtitle { color: #888; font-size: 20px; margin-bottom: 40px; letter-spacing: 4px; }
+        #langScreen .lang-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 16px;
+            max-width: 700px;
+            width: 100%;
+            padding: 0 20px;
+        }
+        #langScreen .lang-btn {
+            background: #1a1a1a;
+            border: 2px solid #2a2a2a;
+            border-radius: 20px;
+            padding: 20px 10px;
+            color: #aaa;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        #langScreen .lang-btn:hover {
+            border-color: #c87a2b;
+            background: #2a1a0a;
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px rgba(200, 122, 43, 0.15);
+        }
+        #langScreen .lang-btn .flag { font-size: 32px; display: block; margin-bottom: 8px; }
+        #langScreen .lang-btn .code { font-size: 12px; color: #666; margin-top: 4px; }
+        #langScreen .lang-btn.elite { border-color: #c87a2b55; background: #1a120a; }
+        #langScreen .lang-btn.elite:hover { border-color: #c87a2b; background: #2a1a0a; }
+        #langScreen .lang-btn .elite-badge { font-size: 9px; background: #c87a2b; color: #0a0a0a; padding: 2px 8px; border-radius: 30px; margin-top: 4px; display: inline-block; font-weight: 700; }
+
+        @media (max-width: 700px) {
+            #langScreen .lang-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+            #langScreen .logo { font-size: 32px; }
+            #langScreen .subtitle { font-size: 14px; }
+            #langScreen .lang-btn { padding: 14px 8px; font-size: 12px; }
+            #langScreen .lang-btn .flag { font-size: 24px; }
+        }
+        @media (max-width: 400px) {
+            #langScreen .lang-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        /* ===== GLAVNA APLIKACIJA ===== */
+        .header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; padding: 15px 20px; background: #1a1a1a; border-radius: 20px; border-left: 6px solid #c87a2b; margin-bottom: 30px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); gap: 15px; }
+        .logo-app { font-size: 28px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+        .logo-app span { background: linear-gradient(135deg, #c87a2b, #e8a84c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo-app i { color: #c87a2b; font-size: 32px; }
+        .header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .lang-selector { display: flex; gap: 4px; background: #121212; padding: 4px; border-radius: 40px; border: 1px solid #2a2a2a; flex-wrap: wrap; }
+        .lang-selector button { background: transparent; border: none; color: #888; padding: 6px 12px; border-radius: 30px; font-weight: 700; font-size: 11px; cursor: pointer; transition: 0.2s; }
+        .lang-selector button.active { background: #c87a2b; color: #0a0a0a; }
+        .lang-selector button.elite { color: #c87a2b; }
+        .lang-selector button.elite.active { background: #c87a2b; color: #0a0a0a; }
+        .lang-selector button:hover:not(.active) { background: #2a2a2a; color: #fff; }
+
+        .badge { background: #2a2a2a; padding: 8px 18px; border-radius: 40px; font-size: 14px; border: 1px solid #c87a2b55; }
+        .badge i { color: #c87a2b; margin-right: 6px; }
+        .btn { background: #c87a2b; border: none; color: #0d0d0d; padding: 10px 24px; border-radius: 40px; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn:hover { background: #e8a84c; transform: scale(1.02); box-shadow: 0 0 20px #c87a2b77; }
+        .btn-outline { background: transparent; border: 1px solid #c87a2b; color: #c87a2b; }
+        .btn-outline:hover { background: #c87a2b22; }
+        .btn-small { padding: 6px 16px; font-size: 12px; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .card { background: #181818; border-radius: 20px; padding: 22px 20px; border: 1px solid #2a2a2a; box-shadow: 0 4px 20px rgba(0,0,0,0.5); transition: 0.2s; }
+        .card:hover { border-color: #c87a2b66; }
+        .card-title { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #a0a0a0; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .card-value { font-size: 36px; font-weight: 700; color: #fff; }
+        .card-value small { font-size: 16px; font-weight: 400; color: #888; margin-left: 8px; }
+        .trend-up { color: #4caf50; }
+        .trend-down { color: #f44336; }
+        .status-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; }
+        .status-green { background: #4caf50; }
+        .status-yellow { background: #ffc107; }
+        .status-red { background: #f44336; }
+
+        .table-wrap { overflow-x: auto; margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th { text-align: left; padding: 12px 8px; color: #aaa; border-bottom: 1px solid #2a2a2a; font-weight: 600; }
+        td { padding: 10px 8px; border-bottom: 1px solid #222; }
+        tr:hover td { background: #1f1f1f; }
+        .badge-status { background: #2a2a2a; padding: 4px 12px; border-radius: 30px; font-size: 12px; }
+
+        .input-group { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
+        .input-group input, .input-group select { flex: 1; min-width: 150px; padding: 10px 14px; border-radius: 30px; border: 1px solid #333; background: #121212; color: #e0e0e0; font-size: 14px; outline: none; }
+        .input-group input:focus, .input-group select:focus { border-color: #c87a2b; }
+        .input-group button { padding: 10px 28px; border-radius: 30px; background: #c87a2b; border: none; color: #0d0d0d; font-weight: 700; cursor: pointer; }
+        .input-group button:hover { background: #e8a84c; }
+
+        .chart-container { position: relative; height: 200px; margin-top: 10px; }
+
+        .voice-btn { background: #2a2a2a; border: 2px solid #c87a2b; color: #c87a2b; padding: 12px 20px; border-radius: 60px; font-size: 18px; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 10px; }
+        .voice-btn.listening { background: #c87a2b; color: #0d0d0d; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 #c87a2b88; } 100% { box-shadow: 0 0 0 20px transparent; } }
+        .voice-output { background: #121212; padding: 12px 18px; border-radius: 20px; margin-top: 12px; border-left: 4px solid #c87a2b; min-height: 50px; }
+
+        .footer { margin-top: 40px; text-align: center; padding: 20px; color: #666; font-size: 13px; border-top: 1px solid #1f1f1f; }
+        .footer a { color: #c87a2b; text-decoration: none; }
+
+        .section { display: none; animation: fadeIn 0.3s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .nav-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 25px; background: #141414; padding: 8px; border-radius: 60px; }
+        .nav-tabs button { background: transparent; border: none; color: #aaa; padding: 10px 22px; border-radius: 40px; font-weight: 600; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        .nav-tabs button.active { background: #c87a2b; color: #0d0d0d; }
+        .nav-tabs button:hover:not(.active) { background: #2a2a2a; color: #fff; }
+
+        /* Workers from all countries */
+        .country-flag { font-size: 20px; margin-right: 6px; }
+        .worker-country { font-size: 12px; color: #888; }
+
+        @media (max-width: 700px) {
+            .header { flex-direction: column; align-items: stretch; }
+            .header-right { justify-content: space-between; }
+            .card-value { font-size: 28px; }
+            .lang-selector button { font-size: 10px; padding: 4px 8px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== LANGUAGE SELECTION SCREEN ===== -->
+    <div id="langScreen">
+        <div class="logo">
+            <i class="fas fa-helmet-safety"></i>
+            <span>BauMind AI</span>
+        </div>
+        <div class="subtitle">🌍 Izaberite jezik / Choose language</div>
+        <div class="lang-grid" id="langGrid">
+            <!-- Generisano putem JavaScript-a -->
+        </div>
+        <p style="color:#555; font-size:12px; margin-top:30px; letter-spacing:2px;">
+            <i class="fas fa-globe"></i> 7 jezika • 7 languages • 7 idiomas • 7 Sprachen
+        </p>
+    </div>
+
+    <!-- ===== MAIN APP ===== -->
+    <div class="container" id="mainApp" style="display:none;">
+
+        <!-- HEADER -->
+        <header class="header">
+            <div class="logo-app">
+                <i class="fas fa-helmet-safety"></i>
+                <span>BauMind AI</span>
+            </div>
+            <div class="header-right">
+                <div class="lang-selector" id="headerLangSelector">
+                    <!-- Generisano putem JavaScript-a -->
+                </div>
+                <span class="badge"><i class="fas fa-microphone"></i> <span data-i18n="voiceBadge">Glasovne naredbe</span></span>
+                <button class="btn" onclick="sendDemoRequest()"><i class="fas fa-paper-plane"></i> <span data-i18n="sendDemo">Pošalji demo</span></button>
+            </div>
+        </header>
+
+        <!-- NAVIGACIJA -->
+        <div class="nav-tabs">
+            <button class="active" data-tab="dashboard"><i class="fas fa-chart-pie"></i> <span data-i18n="navDashboard">Dashboard</span></button>
+            <button data-tab="projects"><i class="fas fa-hard-hat"></i> <span data-i18n="navProjects">Projekti</span></button>
+            <button data-tab="workers"><i class="fas fa-users"></i> <span data-i18n="navWorkers">Radnici</span></button>
+            <button data-tab="finance"><i class="fas fa-coins"></i> <span data-i18n="navFinance">Finansije</span></button>
+            <button data-tab="email"><i class="fas fa-envelope"></i> <span data-i18n="navEmail">Pošta</span></button>
+            <button data-tab="report"><i class="fas fa-file-alt"></i> <span data-i18n="navReport">Izveštaj</span></button>
+        </div>
+
+        <!-- ===== DASHBOARD ===== -->
+        <section id="dashboard" class="section active">
+            <div class="grid">
+                <div class="card"><div class="card-title"><span data-i18n="activeProjects">Aktivni projekti</span> <i class="fas fa-hard-hat"></i></div><div class="card-value" id="dashProjects">3 <small data-i18n="of5">od 5</small></div><div style="margin-top:12px;font-size:14px;color:#aaa;"><span class="status-dot status-green"></span> <span data-i18n="onPlan">2 po planu</span> · <span class="status-dot status-red"></span> <span data-i18n="overBudget">1 prekoračen</span></div></div>
+                <div class="card"><div class="card-title"><span data-i18n="totalMargin">Ukupna marža</span> <i class="fas fa-percent"></i></div><div class="card-value">18.4% <small class="trend-down">▼ 2.1%</small></div><div style="margin-top:12px;font-size:14px;color:#aaa;" data-i18n="target">Cilj: 22%</div></div>
+                <div class="card"><div class="card-title"><span data-i18n="workersOnSite">Radnici na terenu</span> <i class="fas fa-user-hard-hat"></i></div><div class="card-value" id="dashWorkers">24 <small data-i18n="of30">od 30</small></div><div style="margin-top:12px;font-size:14px;color:#aaa;"><i class="fas fa-user-slash" style="color:#f44336;"></i> <span data-i18n="onSickLeave">1 na bolovanju</span></div></div>
+                <div class="card"><div class="card-title"><span data-i18n="monthlyRevenue">Prihodi ovog meseca</span> <i class="fas fa-euro-sign"></i></div><div class="card-value">€142.000 <small class="trend-up">▲ 8%</small></div><div style="margin-top:12px;font-size:14px;color:#aaa;" data-i18n="projection">Projekcija: €156.000</div></div>
+            </div>
+
+            <div class="grid" style="grid-template-columns:2fr 1fr;">
+                <div class="card"><div class="card-title"><span data-i18n="materialChart">📊 Potrošnja materijala</span></div><div class="chart-container"><canvas id="dashChart"></canvas></div></div>
+                <div class="card"><div class="card-title"><span data-i18n="urgentRecommendations">🔥 Hitne preporuke</span></div><ul style="list-style:none;padding:0;font-size:14px;line-height:2;" id="recommendationsList"><li><span class="status-dot status-red"></span> <b data-i18n="rec1">Kreuzberg – €24.500 prekoračenja</b></li><li><span class="status-dot status-yellow"></span> <b data-i18n="rec2">Mitte – nedostaje 1 radnik</b></li><li><span class="status-dot status-green"></span> <b data-i18n="rec3">Neukölln – ispod budžeta 7%</b></li><li style="margin-top:10px;"><i class="fas fa-lightbulb" style="color:#c87a2b;"></i> <span data-i18n="rec4">Zamenite dobavljača lepka – ušteda €4.200</span></li></ul></div>
+            </div>
+
+            <div class="card" style="margin-top:20px;">
+                <div class="card-title"><span data-i18n="voiceCommand">🗣️ Glasovna naredba (demo)</span></div>
+                <button id="voiceBtn" class="voice-btn"><i class="fas fa-microphone"></i> <span data-i18n="clickAndSpeak">Klikni i govori</span></button>
+                <div id="voiceOutput" class="voice-output" data-i18n="voicePlaceholder">Ovde će se prikazati vaša naredba...</div>
+            </div>
+        </section>
+
+        <!-- ===== PROJEKTI ===== -->
+        <section id="projects" class="section">
+            <div class="card">
+                <div class="card-title"><span data-i18n="projectList">📋 Lista projekata</span> <button class="btn" onclick="addProject()"><i class="fas fa-plus"></i> <span data-i18n="add">Dodaj</span></button></div>
+                <div class="input-group">
+                    <input id="projName" placeholder="Naziv" value="Novi stan Beč" />
+                    <input id="projBudget" placeholder="Budžet (€)" value="45000" />
+                    <input id="projCost" placeholder="Trošak (€)" value="38000" />
+                    <button onclick="addProject()"><i class="fas fa-plus"></i> <span data-i18n="add">Dodaj</span></button>
+                </div>
+                <div class="table-wrap"><table><thead><tr><th data-i18n="projectName">Projekat</th><th data-i18n="budget">Budžet</th><th data-i18n="cost">Trošak</th><th data-i18n="status">Status</th><th data-i18n="action">Akcija</th></tr></thead><tbody id="projectBody"></tbody></table></div>
+            </div>
+        </section>
+
+        <!-- ===== RADNICI (sa zemljama) ===== -->
+        <section id="workers" class="section">
+            <div class="card">
+                <div class="card-title"><span data-i18n="workersTitle">👷 Radnici iz svih zemalja</span> <button class="btn" onclick="addWorker()"><i class="fas fa-plus"></i> <span data-i18n="add">Dodaj</span></button></div>
+                <div class="input-group">
+                    <input id="workerName" placeholder="Ime" value="Marko Novi" />
+                    <select id="workerCountrySelect">
+                        <option value="🇷🇸" selected>🇷🇸 Srbija</option>
+                        <option value="🇭🇷">🇭🇷 Hrvatska</option>
+                        <option value="🇧🇦">🇧🇦 BiH</option>
+                        <option value="🇲🇰">🇲🇰 Makedonija</option>
+                        <option value="🇲🇪">🇲🇪 Crna Gora</option>
+                        <option value="🇸🇮">🇸🇮 Slovenija</option>
+                        <option value="🇩🇪">🇩🇪 Nemačka</option>
+                        <option value="🇦🇹">🇦🇹 Austrija</option>
+                        <option value="🇪🇸">🇪🇸 Španija</option>
+                    </select>
+                    <input id="workerSpec" placeholder="Specijalnost" value="Keramika" />
+                    <input id="workerRate" placeholder="Satnica (€)" value="28" />
+                    <button onclick="addWorker()"><i class="fas fa-plus"></i> <span data-i18n="add">Dodaj</span></button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th data-i18n="name">Ime</th><th data-i18n="country">Država</th><th data-i18n="specialty">Specijalnost</th><th data-i18n="hourlyRate">Satnica</th><th data-i18n="project">Projekat</th><th data-i18n="status">Status</th><th data-i18n="action">Akcija</th></tr></thead>
+                        <tbody id="workerBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== FINANSIJE ===== -->
+        <section id="finance" class="section">
+            <div class="grid" style="grid-template-columns:1fr 1fr;">
+                <div class="card"><div class="card-title"><span data-i18n="incomeExpense">💰 Prihodi / Rashodi</span></div><div class="chart-container"><canvas id="financeChart"></canvas></div></div>
+                <div class="card"><div class="card-title"><span data-i18n="marginPerProject">📈 Marža po projektu</span></div><div class="chart-container"><canvas id="marginChart"></canvas></div></div>
+            </div>
+            <div class="card">
+                <div class="card-title"><span data-i18n="dailyCostEntry">📅 Dnevni unos troškova</span></div>
+                <div class="input-group">
+                    <input id="costDate" type="date" value="2026-09-05" />
+                    <input id="costProject" placeholder="Projekat" value="Kreuzberg" />
+                    <input id="costDesc" placeholder="Stavka" value="Lepak" />
+                    <input id="costAmount" placeholder="Iznos (€)" value="420" />
+                    <button onclick="addCost()"><i class="fas fa-plus"></i> <span data-i18n="add">Unesi</span></button>
+                </div>
+                <div class="table-wrap"><table><thead><tr><th data-i18n="date">Datum</th><th data-i18n="project">Projekat</th><th data-i18n="item">Stavka</th><th data-i18n="amount">Iznos</th></tr></thead><tbody id="costBody"></tbody></table></div>
+            </div>
+        </section>
+
+        <!-- ===== EMAIL ===== -->
+        <section id="email" class="section">
+            <div class="card">
+                <div class="card-title"><span><i class="fas fa-inbox"></i> <span data-i18n="emailInbox">Pristigle poruke</span></span> <button class="btn btn-small" onclick="refreshEmails()"><i class="fas fa-sync"></i> <span data-i18n="refresh">Osveži</span></button></div>
+                <div id="emailList"></div>
+            </div>
+        </section>
+
+        <!-- ===== IZVEŠTAJ ===== -->
+        <section id="report" class="section">
+            <div class="card">
+                <div class="card-title"><span data-i18n="dailyReport">📄 Dnevni AI izveštaj</span> <button class="btn" onclick="refreshReport()"><i class="fas fa-sync"></i> <span data-i18n="refresh">Osveži</span></button></div>
+                <div id="reportContent" style="background:#121212; padding:20px; border-radius:16px; border-left:6px solid #c87a2b; white-space:pre-wrap; font-size:14px; line-height:1.8;">⏳ Učitavanje...</div>
+            </div>
+        </section>
+
+        <div class="footer"><p>🏗️ BauMind AI – <span data-i18n="footerText">Vaš digitalni direktor za gradjevinu</span> | <a href="#" onclick="sendDemoRequest()" data-i18n="contactUs">Kontaktirajte nas</a> | © 2026 Sinisa Stantic</p></div>
+    </div>
+
+    <script>
+        // ============================================================
+        // 1. JEZIČKA BAZA (PREVODI) – 7 JEZIKA
+        // ============================================================
+        const LANGUAGES = {
+            sr: { name: 'Srpski', flag: '🇷🇸', elite: false },
+            hr: { name: 'Hrvatski', flag: '🇭🇷', elite: false },
+            bs: { name: 'Bosanski', flag: '🇧🇦', elite: false },
+            mk: { name: 'Makedonski', flag: '🇲🇰', elite: false },
+            de: { name: 'Deutsch', flag: '🇩🇪', elite: true },
+            en: { name: 'English', flag: '🇬🇧', elite: true },
+            es: { name: 'Español', flag: '🇪🇸', elite: false }
+        };
+
+        const t = {
+            sr: {
+                // Osnovno
+                voiceBadge: 'Glasovne naredbe', sendDemo: 'Pošalji demo',
+                navDashboard: 'Dashboard', navProjects: 'Projekti', navWorkers: 'Radnici',
+                navFinance: 'Finansije', navEmail: 'Pošta', navReport: 'Izveštaj',
+                activeProjects: 'Aktivni projekti', of5: 'od 5', onPlan: '2 po planu', overBudget: '1 prekoračen',
+                totalMargin: 'Ukupna marža', target: 'Cilj: 22%',
+                workersOnSite: 'Radnici na terenu', of30: 'od 30', onSickLeave: '1 na bolovanju',
+                monthlyRevenue: 'Prihodi ovog meseca', projection: 'Projekcija: €156.000',
+                materialChart: '📊 Potrošnja materijala',
+                urgentRecommendations: '🔥 Hitne preporuke',
+                rec1: 'Kreuzberg – €24.500 prekoračenja', rec2: 'Mitte – nedostaje 1 radnik',
+                rec3: 'Neukölln – ispod budžeta 7%', rec4: 'Zamenite dobavljača lepka – ušteda €4.200',
+                voiceCommand: '🗣️ Glasovna naredba (demo)', clickAndSpeak: 'Klikni i govori',
+                voicePlaceholder: 'Ovde će se prikazati vaša naredba...',
+                projectList: '📋 Lista projekata', add: 'Dodaj',
+                projectName: 'Projekat', budget: 'Budžet', cost: 'Trošak', status: 'Status', action: 'Akcija',
+                workersTitle: '👷 Radnici iz svih zemalja', name: 'Ime', country: 'Država',
+                specialty: 'Specijalnost', hourlyRate: 'Satnica', project: 'Projekat',
+                incomeExpense: '💰 Prihodi / Rashodi', marginPerProject: '📈 Marža po projektu',
+                dailyCostEntry: '📅 Dnevni unos troškova', date: 'Datum', item: 'Stavka', amount: 'Iznos',
+                dailyReport: '📄 Dnevni AI izveštaj', refresh: 'Osveži', contactUs: 'Kontaktirajte nas',
+                emailInbox: '📧 Pristigle poruke', sender: 'Pošiljalac', subject: 'Naslov',
+                aiAnalysis: '🧠 AI Analiza', suggestedReply: '✉️ Predlog odgovora',
+                sendReply: '📧 Pošalji odgovor', analyze: '🔍 AI analiza', close: 'Zatvori',
+                footerText: 'Vaš digitalni direktor za gradjevinu',
+                // Voice
+                voiceProject: '📊 Analiziram projekte... Trenutno 3 aktivna. Najveće prekoračenje: Kreuzberg.',
+                voiceWorkers: (free) => `👷 Slobodni radnici: ${free || 'nema slobodnih'}`,
+                voiceDefault: '🤖 Razumem. Preporučujem da pregledate dnevni izveštaj.'
+            },
+            hr: {
+                voiceBadge: 'Glasovne naredbe', sendDemo: 'Pošalji demo',
+                navDashboard: 'Nadzorna ploča', navProjects: 'Projekti', navWorkers: 'Radnici',
+                navFinance: 'Financije', navEmail: 'Pošta', navReport: 'Izvještaj',
+                activeProjects: 'Aktivni projekti', of5: 'od 5', onPlan: '2 po planu', overBudget: '1 prekoračen',
+                totalMargin: 'Ukupna marža', target: 'Cilj: 22%',
+                workersOnSite: 'Radnici na terenu', of30: 'od 30', onSickLeave: '1 na bolovanju',
+                monthlyRevenue: 'Prihodi ovog mjeseca', projection: 'Projekcija: €156.000',
+                materialChart: '📊 Potrošnja materijala',
+                urgentRecommendations: '🔥 Hitne preporuke',
+                rec1: 'Kreuzberg – €24.500 prekoračenja', rec2: 'Mitte – nedostaje 1 radnik',
+                rec3: 'Neukölln – ispod budžeta 7%', rec4: 'Zamijenite dobavljača ljepila – ušteda €4.200',
+                voiceCommand: '🗣️ Glasovna naredba (demo)', clickAndSpeak: 'Klikni i govori',
+                voicePlaceholder: 'Ovdje će se prikazati vaša naredba...',
+                projectList: '📋 Lista projekata', add: 'Dodaj',
+                projectName: 'Projekat', budget: 'Budžet', cost: 'Trošak', status: 'Status', action: 'Akcija',
+                workersTitle: '👷 Radnici iz svih zemalja', name: 'Ime', country: 'Država',
+                specialty: 'Specijalnost', hourlyRate: 'Satnica', project: 'Projekat',
+                incomeExpense: '💰 Prihodi / Rashodi', marginPerProject: '📈 Marža po projektu',
+                dailyCostEntry: '📅 Dnevni unos troškova', date: 'Datum', item: 'Stavka', amount: 'Iznos',
+                dailyReport: '📄 Dnevni AI izvještaj', refresh: 'Osvježi', contactUs: 'Kontaktirajte nas',
+                emailInbox: '📧 Pristigle poruke', sender: 'Pošiljatelj', subject: 'Naslov',
+                aiAnalysis: '🧠 AI Analiza', suggestedReply: '✉️ Prijedlog odgovora',
+                sendReply: '📧 Pošalji odgovor', analyze: '🔍 AI analiza', close: 'Zatvori',
+                footerText: 'Vaš digitalni direktor za gradjevinu',
+                voiceProject: '📊 Analiziram projekte... Trenutno 3 aktivna. Najveće prekoračenje: Kreuzberg.',
+                voiceWorkers: (free) => `👷 Slobodni radnici: ${free || 'nema slobodnih'}`,
+                voiceDefault: '🤖 Razumem. Preporučujem da pregledate dnevni izvještaj.'
+            },
+            bs: {
+                voiceBadge: 'Glasovne naredbe', sendDemo: 'Pošalji demo',
+                navDashboard: 'Kontrolna tabla', navProjects: 'Projekti', navWorkers: 'Radnici',
+                navFinance: 'Finansije', navEmail: 'Pošta', navReport: 'Izvještaj',
+                activeProjects: 'Aktivni projekti', of5: 'od 5', onPlan: '2 po planu', overBudget: '1 prekoračen',
+                totalMargin: 'Ukupna marža', target: 'Cilj: 22%',
+                workersOnSite: 'Radnici na terenu', of30: 'od 30', onSickLeave: '1 na bolovanju',
+                monthlyRevenue: 'Prihodi ovog mjeseca', projection: 'Projekcija: €156.000',
+                materialChart: '📊 Potrošnja materijala',
+                urgentRecommendations: '🔥 Hitne preporuke',
+                rec1: 'Kreuzberg – €24.500 prekoračenja', rec2: 'Mitte – nedostaje 1 radnik',
+                rec3: 'Neukölln – ispod budžeta 7%', rec4: 'Zamijenite dobavljača ljepila – ušteda €4.200',
+                voiceCommand: '🗣️ Glasovna naredba (demo)', clickAndSpeak: 'Klikni i govori',
+                voicePlaceholder: 'Ovdje će se prikazati vaša naredba...',
+                projectList: '📋 Lista projekata', add: 'Dodaj',
+                projectName: 'Projekat', budget: 'Budžet', cost: 'Trošak', status: 'Status', action: 'Akcija',
+                workersTitle: '👷 Radnici iz svih zemalja', name: 'Ime', country: 'Država',
+                specialty: 'Specijalnost', hourlyRate: 'Satnica', project: 'Projekat',
+                incomeExpense: '💰 Prihodi / Rashodi', marginPerProject: '📈 Marža po projektu',
+                dailyCostEntry: '📅 Dnevni unos troškova', date: 'Datum', item: 'Stavka', amount: 'Iznos',
+                dailyReport: '📄 Dnevni AI izvještaj', refresh: 'Osveži', contactUs: 'Kontaktirajte nas',
+                emailInbox: '📧 Pristigle poruke', sender: 'Pošiljalac', subject: 'Naslov',
+                aiAnalysis: '🧠 AI Analiza', suggestedReply: '✉️ Predlog odgovora',
+                sendReply: '📧 Pošalji odgovor', analyze: '🔍 AI analiza', close: 'Zatvori',
+                footerText: 'Vaš digitalni direktor za gradjevinu',
+                voiceProject: '📊 Analiziram projekte... Trenutno 3 aktivna. Najveće prekoračenje: Kreuzberg.',
+                voiceWorkers: (free) => `👷 Slobodni radnici: ${free || 'nema slobodnih'}`,
+                voiceDefault: '🤖 Razumem. Preporučujem da pregledate dnevni izvještaj.'
+            },
+            mk: {
+                voiceBadge: 'Гласовни команди', sendDemo: 'Испрати демо',
+                navDashboard: 'Контролна табла', navProjects: 'Проекти', navWorkers: 'Работници',
+                navFinance: 'Финансии', navEmail: 'Пошта', navReport: 'Извештај',
+                activeProjects: 'Активни проекти', of5: 'од 5', onPlan: '2 по план', overBudget: '1 пречекорен',
+                totalMargin: 'Вкупна маржа', target: 'Цел: 22%',
+                workersOnSite: 'Работници на терен', of30: 'од 30', onSickLeave: '1 на боледување',
+                monthlyRevenue: 'Приходи овој месец', projection: 'Проекција: €156.000',
+                materialChart: '📊 Потрошувачка на материјал',
+                urgentRecommendations: '🔥 Итни препораки',
+                rec1: 'Кројцберг – €24.500 пречекорувања', rec2: 'Мите – недостасува 1 работник',
+                rec3: 'Нојкелн – под буџетот 7%', rec4: 'Замените го добавувачот на лепак – заштеда €4.200',
+                voiceCommand: '🗣️ Гласовна команда (демо)', clickAndSpeak: 'Кликни и зборувај',
+                voicePlaceholder: 'Овде ќе се прикаже вашата команда...',
+                projectList: '📋 Листа на проекти', add: 'Додај',
+                projectName: 'Проект', budget: 'Буџет', cost: 'Трошок', status: 'Статус', action: 'Акција',
+                workersTitle: '👷 Работници од сите земји', name: 'Име', country: 'Држава',
+                specialty: 'Специјалност', hourlyRate: 'Саатница', project: 'Проект',
+                incomeExpense: '💰 Приходи / Расходи', marginPerProject: '📈 Маржа по проект',
+                dailyCostEntry: '📅 Дневен внес на трошоци', date: 'Датум', item: 'Ставка', amount: 'Износ',
+                dailyReport: '📄 Дневен AI извештај', refresh: 'Освежи', contactUs: 'Контактирајте не',
+                emailInbox: '📧 Пристигнати пораки', sender: 'Испраќач', subject: 'Наслов',
+                aiAnalysis: '🧠 AI Анализа', suggestedReply: '✉️ Предлог за одговор',
+                sendReply: '📧 Испрати одговор', analyze: '🔍 AI анализа', close: 'Затвори',
+                footerText: 'Вашиот дигитален директор за градежништво',
+                voiceProject: '📊 Анализирам проекти... Тренутно 3 активни. Најголемо пречекорување: Кројцберг.',
+                voiceWorkers: (free) => `👷 Слободни работници: ${free || 'нема слободни'}`,
+                voiceDefault: '🤖 Разбирам. Препорачувам да го прегледате дневниот извештај.'
+            },
+            de: {
+                voiceBadge: 'Sprachbefehle', sendDemo: 'Demo senden',
+                navDashboard: 'Dashboard', navProjects: 'Projekte', navWorkers: 'Arbeiter',
+                navFinance: 'Finanzen', navEmail: 'Post', navReport: 'Bericht',
+                activeProjects: 'Aktive Projekte', of5: 'von 5', onPlan: '2 im Plan', overBudget: '1 überschritten',
+                totalMargin: 'Gesamtmarge', target: 'Ziel: 22%',
+                workersOnSite: 'Arbeiter vor Ort', of30: 'von 30', onSickLeave: '1 krankgeschrieben',
+                monthlyRevenue: 'Einnahmen diesen Monat', projection: 'Prognose: €156.000',
+                materialChart: '📊 Materialverbrauch',
+                urgentRecommendations: '🔥 Dringende Empfehlungen',
+                rec1: 'Kreuzberg – €24.500 Überschreitung', rec2: 'Mitte – 1 Arbeiter fehlt',
+                rec3: 'Neukölln – 7% unter Budget', rec4: 'Wechseln Sie den Klebstofflieferanten – Einsparung €4.200',
+                voiceCommand: '🗣️ Sprachbefehl (Demo)', clickAndSpeak: 'Klicken und sprechen',
+                voicePlaceholder: 'Hier wird Ihr Befehl angezeigt...',
+                projectList: '📋 Projektliste', add: 'Hinzufügen',
+                projectName: 'Projekt', budget: 'Budget', cost: 'Kosten', status: 'Status', action: 'Aktion',
+                workersTitle: '👷 Arbeiter aus allen Ländern', name: 'Name', country: 'Land',
+                specialty: 'Spezialisierung', hourlyRate: 'Stundensatz', project: 'Projekt',
+                incomeExpense: '💰 Einnahmen / Ausgaben', marginPerProject: '📈 Marge pro Projekt',
+                dailyCostEntry: '📅 Tägliche Kostenerfassung', date: 'Datum', item: 'Position', amount: 'Betrag',
+                dailyReport: '📄 Täglicher AI-Bericht', refresh: 'Aktualisieren', contactUs: 'Kontaktieren Sie uns',
+                emailInbox: '📧 Posteingang', sender: 'Absender', subject: 'Betreff',
+                aiAnalysis: '🧠 KI-Analyse', suggestedReply: '✉️ Antwortvorschlag',
+                sendReply: '📧 Antwort senden', analyze: '🔍 KI-Analyse', close: 'Schließen',
+                footerText: 'Ihr digitaler Direktor für das Bauwesen',
+                voiceProject: '📊 Analysiere Projekte... Derzeit 3 aktiv. Größte Überschreitung: Kreuzberg.',
+                voiceWorkers: (free) => `👷 Freie Arbeiter: ${free || 'keine freien'}`,
+                voiceDefault: '🤖 Verstanden. Ich empfehle einen Blick auf den täglichen Bericht.'
+            },
+            en: {
+                voiceBadge: 'Voice Commands', sendDemo: 'Send Demo',
+                navDashboard: 'Dashboard', navProjects: 'Projects', navWorkers: 'Workers',
+                navFinance: 'Finance', navEmail: 'Email', navReport: 'Report',
+                activeProjects: 'Active Projects', of5: 'of 5', onPlan: '2 on plan', overBudget: '1 over budget',
+                totalMargin: 'Total Margin', target: 'Target: 22%',
+                workersOnSite: 'Workers on Site', of30: 'of 30', onSickLeave: '1 on sick leave',
+                monthlyRevenue: 'Monthly Revenue', projection: 'Projection: €156,000',
+                materialChart: '📊 Material Consumption',
+                urgentRecommendations: '🔥 Urgent Recommendations',
+                rec1: 'Kreuzberg – €24,500 over budget', rec2: 'Mitte – 1 worker missing',
+                rec3: 'Neukölln – 7% under budget', rec4: 'Change glue supplier – save €4,200',
+                voiceCommand: '🗣️ Voice Command (demo)', clickAndSpeak: 'Click and speak',
+                voicePlaceholder: 'Your command will appear here...',
+                projectList: '📋 Project List', add: 'Add',
+                projectName: 'Project', budget: 'Budget', cost: 'Cost', status: 'Status', action: 'Action',
+                workersTitle: '👷 Workers from all countries', name: 'Name', country: 'Country',
+                specialty: 'Specialty', hourlyRate: 'Hourly Rate', project: 'Project',
+                incomeExpense: '💰 Income / Expenses', marginPerProject: '📈 Margin per Project',
+                dailyCostEntry: '📅 Daily Cost Entry', date: 'Date', item: 'Item', amount: 'Amount',
+                dailyReport: '📄 Daily AI Report', refresh: 'Refresh', contactUs: 'Contact Us',
+                emailInbox: '📧 Inbox', sender: 'Sender', subject: 'Subject',
+                aiAnalysis: '🧠 AI Analysis', suggestedReply: '✉️ Suggested Reply',
+                sendReply: '📧 Send Reply', analyze: '🔍 AI Analyze', close: 'Close',
+                footerText: 'Your digital director for construction',
+                voiceProject: '📊 Analyzing projects... Currently 3 active. Biggest overrun: Kreuzberg.',
+                voiceWorkers: (free) => `👷 Free workers: ${free || 'none available'}`,
+                voiceDefault: '🤖 Understood. I recommend checking the daily report.'
+            },
+            es: {
+                voiceBadge: 'Comandos de voz', sendDemo: 'Enviar demo',
+                navDashboard: 'Panel', navProjects: 'Proyectos', navWorkers: 'Trabajadores',
+                navFinance: 'Finanzas', navEmail: 'Correo', navReport: 'Informe',
+                activeProjects: 'Proyectos activos', of5: 'de 5', onPlan: '2 en plan', overBudget: '1 excedido',
+                totalMargin: 'Margen total', target: 'Objetivo: 22%',
+                workersOnSite: 'Trabajadores en obra', of30: 'de 30', onSickLeave: '1 de baja',
+                monthlyRevenue: 'Ingresos mensuales', projection: 'Proyección: €156.000',
+                materialChart: '📊 Consumo de materiales',
+                urgentRecommendations: '🔥 Recomendaciones urgentes',
+                rec1: 'Kreuzberg – €24.500 excedido', rec2: 'Mitte – falta 1 trabajador',
+                rec3: 'Neukölln – 7% por debajo del presupuesto', rec4: 'Cambie de proveedor de pegamento – ahorre €4.200',
+                voiceCommand: '🗣️ Comando de voz (demo)', clickAndSpeak: 'Haga clic y hable',
+                voicePlaceholder: 'Aquí se mostrará su comando...',
+                projectList: '📋 Lista de proyectos', add: 'Añadir',
+                projectName: 'Proyecto', budget: 'Presupuesto', cost: 'Costo', status: 'Estado', action: 'Acción',
+                workersTitle: '👷 Trabajadores de todos los países', name: 'Nombre', country: 'País',
+                specialty: 'Especialidad', hourlyRate: 'Tarifa por hora', project: 'Proyecto',
+                incomeExpense: '💰 Ingresos / Gastos', marginPerProject: '📈 Margen por proyecto',
+                dailyCostEntry: '📅 Registro diario de costos', date: 'Fecha', item: 'Partida', amount: 'Importe',
+                dailyReport: '📄 Informe diario de IA', refresh: 'Actualizar', contactUs: 'Contáctenos',
+                emailInbox: '📧 Bandeja de entrada', sender: 'Remitente', subject: 'Asunto',
+                aiAnalysis: '🧠 Análisis de IA', suggestedReply: '✉️ Respuesta sugerida',
+                sendReply: '📧 Enviar respuesta', analyze: '🔍 Analizar con IA', close: 'Cerrar',
+                footerText: 'Su director digital para la construcción',
+                voiceProject: '📊 Analizando proyectos... Actualmente 3 activos. Mayor excedente: Kreuzberg.',
+                voiceWorkers: (free) => `👷 Trabajadores libres: ${free || 'ninguno disponible'}`,
+                voiceDefault: '🤖 Entendido. Recomiendo revisar el informe diario.'
+            }
+        };
+
+        // ============================================================
+        // 2. GLOBALNE VARIJABLE
+        // ============================================================
+        let currentLang = 'sr';
+        let projects = [
+            { id: 1, name: 'Stanovi Kreuzberg', budget: 124000, cost: 148500 },
+            { id: 2, name: 'Kancelarije Mitte', budget: 78000, cost: 82000 },
+            { id: 3, name: 'Škola Neukölln', budget: 175000, cost: 163000 }
+        ];
+        let workers = [
+            { id: 1, name: 'Mirko Petrović', flag: '🇷🇸', country: 'Srbija', spec: 'Keramika+fuge', rate: 28, project: 'Kreuzberg', free: false },
+            { id: 2, name: 'Zoran Horvat', flag: '🇭🇷', country: 'Hrvatska', spec: 'Keramika', rate: 25, project: 'Kreuzberg', free: false },
+            { id: 3, name: 'Ana Kovačević', flag: '🇧🇦', country: 'BiH', spec: 'Keramika+pločice', rate: 27, project: 'Mitte', free: false },
+            { id: 4, name: 'Marko Schröder', flag: '🇩🇪', country: 'Nemačka', spec: 'Keramika+fuge', rate: 29, project: '', free: true },
+            { id: 5, name: 'Juan García', flag: '🇪🇸', country: 'Španija', spec: 'Keramika', rate: 26, project: 'Neukölln', free: false },
+            { id: 6, name: 'Petar Marković', flag: '🇲🇰', country: 'Makedonija', spec: 'Hidroizolacija', rate: 30, project: '', free: true }
+        ];
+        let costs = [
+            { date: '2026-09-01', project: 'Kreuzberg', desc: 'Lepak', amount: 420 },
+            { date: '2026-09-01', project: 'Kreuzberg', desc: 'Fuge', amount: 350 },
+            { date: '2026-09-02', project: 'Mitte', desc: 'Pločice 60x60', amount: 4560 },
+            { date: '2026-09-03', project: 'Neukölln', desc: 'Hidroizolacija', amount: 720 }
+        ];
+
+        // Email simulacija
+        let emails = [
+            { id: 1, from: 'Hans Müller <hans@mueller-bau.de>', subject: 'Ponuda za keramiku – Stanovi Kreuzberg', date: '5.9.2026. 08:23', body: 'Poštovani, dostavljamo vam ponudu za keramičarske radove na projektu Stanovi Kreuzberg. Ukupna vrednost je €38.500, rok za odgovor je 15.10.2026.', priority: 'high', analyzed: false },
+            { id: 2, from: 'Petra Weber <petra@alba-bau.de>', subject: 'Reklamacija – Loše fugiranje na projektu Mitte', date: '5.9.2026. 09:45', body: 'Primetili smo nepravilnosti na fugama na projektu Mitte. Molimo vas da pošaljete tim za ispravku do kraja nedelje.', priority: 'high', analyzed: false },
+            { id: 3, from: 'Markus Schmidt <markus@baumax.at>', subject: 'Nove cene lepka i fug mase', date: '4.9.2026. 14:12', body: 'Obaveštavamo vas o novim cenama lepka za pločice. Cena je smanjena za 8% na količine veće od 100 vreća.', priority: 'medium', analyzed: false },
+            { id: 4, from: 'info@greentower.at', subject: 'Upit za saradnju – 40 stanova Beč', date: '4.9.2026. 11:03', body: 'Planiramo izgradnju 40 stanova u Beču (12. okrug). Interesuje nas vaša ponuda za kompletne keramičarske radove (1.800m²).', priority: 'high', analyzed: false }
+        ];
+
+        let dashChart, financeChart, marginChart;
+        let workerIdCounter = 100;
+        let projectIdCounter = 100;
+
+        // ============================================================
+        // 3. JEZIČKE FUNKCIJE
+        // ============================================================
+        function getTranslation(key, ...args) {
+            const langData = t[currentLang] || t.sr;
+            if (typeof langData[key] === 'function') {
+                return langData[key](...args);
+            }
+            return langData[key] || key;
+        }
+
+        function setLanguage(lang) {
+            if (!t[lang]) return;
+            currentLang = lang;
+
+            // Prevod svih elemenata sa data-i18n
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                const val = getTranslation(key);
+                if (val) el.textContent = val;
+            });
+
+            // Placeholder prevod
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.dataset.i18nPlaceholder;
+                const val = getTranslation(key);
+                if (val) el.placeholder = val;
+            });
+
+            // Jezički meni
+            document.querySelectorAll('.lang-selector button').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+
+            // Osveži sve
+            renderAll();
+            renderEmails();
+            generateReport();
+        }
+
+        // ============================================================
+        // 4. LANGUAGE SELECTION SCREEN
+        // ============================================================
+        function renderLanguageScreen() {
+            const grid = document.getElementById('langGrid');
+            grid.innerHTML = '';
+            Object.entries(LANGUAGES).forEach(([code, lang]) => {
+                const btn = document.createElement('button');
+                btn.className = 'lang-btn' + (lang.elite ? ' elite' : '');
+                btn.innerHTML = `
+                    <span class="flag">${lang.flag}</span>
+                    ${lang.name}
+                    <span class="code">${code.toUpperCase()}</span>
+                    ${lang.elite ? '<div class="elite-badge">⭐ ELITE</div>' : ''}
+                `;
+                btn.onclick = () => selectLanguage(code);
+                grid.appendChild(btn);
+            });
+        }
+
+        function selectLanguage(lang) {
+            if (!t[lang]) return;
+            // Sakrij ekran za izbor jezika
+            document.getElementById('langScreen').classList.add('hidden');
+            document.getElementById('mainApp').style.display = 'block';
+
+            // Postavi jezik
+            currentLang = lang;
+            renderHeaderLanguageSelector();
+            setLanguage(lang);
+            updateCharts();
+            renderEmails();
+            generateReport();
+        }
+
+        function renderHeaderLanguageSelector() {
+            const container = document.getElementById('headerLangSelector');
+            container.innerHTML = '';
+            Object.entries(LANGUAGES).forEach(([code, lang]) => {
+                const btn = document.createElement('button');
+                btn.dataset.lang = code;
+                btn.className = (code === currentLang ? 'active ' : '') + (lang.elite ? 'elite' : '');
+                btn.textContent = lang.flag + ' ' + code.toUpperCase();
+                btn.onclick = () => setLanguage(code);
+                container.appendChild(btn);
+            });
+        }
+
+        // ============================================================
+        // 5. RENDER FUNKCIJE
+        // ============================================================
+        function renderProjects() {
+            const tbody = document.getElementById('projectBody');
+            const overText = getTranslation('overBudget');
+            const onPlanText = getTranslation('onPlan');
+            tbody.innerHTML = projects.map(p => `
+                <tr>
+                    <td><strong>${p.name}</strong></td>
+                    <td>€${p.budget.toLocaleString()}</td>
+                    <td>€${p.cost.toLocaleString()}</td>
+                    <td><span class="badge-status ${p.cost > p.budget ? 'status-red' : 'status-green'}">${p.cost > p.budget ? '⚠️ ' + overText : '✅ ' + onPlanText}</span></td>
+                    <td><button class="btn btn-outline" style="padding:4px 12px;font-size:12px;" onclick="deleteProject(${p.id})"><i class="fas fa-trash"></i></button></td>
+                </tr>
+            `).join('');
+            document.getElementById('dashProjects').innerHTML = `${projects.length} <small>${getTranslation('of5')}</small>`;
+        }
+
+        function renderWorkers() {
+            const tbody = document.getElementById('workerBody');
+            const freeText = getTranslation('status') === 'Status' ? 'Slobodan' : getTranslation('status');
+            const busyText = getTranslation('status') === 'Status' ? 'Zauzet' : getTranslation('status');
+            tbody.innerHTML = workers.map(w => `
+                <tr>
+                    <td><strong>${w.name}</strong></td>
+                    <td><span class="country-flag">${w.flag}</span> <span class="worker-country">${w.country}</span></td>
+                    <td>${w.spec}</td>
+                    <td>€${w.rate}</td>
+                    <td>${w.project || '—'}</td>
+                    <td><span class="status-dot ${w.free ? 'status-green' : 'status-red'}"></span> ${w.free ? freeText : busyText}</td>
+                    <td><button class="btn btn-outline" style="padding:4px 12px;font-size:12px;" onclick="deleteWorker(${w.id})"><i class="fas fa-trash"></i></button></td>
+                </tr>
+            `).join('');
+            document.getElementById('dashWorkers').innerHTML = `${workers.filter(w => !w.free).length} <small>${getTranslation('of30')}</small>`;
+        }
+
+        function renderCosts() {
+            const tbody = document.getElementById('costBody');
+            tbody.innerHTML = costs.map(c => `
+                <tr>
+                    <td>${c.date}</td>
+                    <td>${c.project}</td>
+                    <td>${c.desc}</td>
+                    <td>€${c.amount.toLocaleString()}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderAll() {
+            renderProjects();
+            renderWorkers();
+            renderCosts();
+        }
+
+        // ============================================================
+        // 6. EMAIL FUNKCIJE
+        // ============================================================
+        function renderEmails() {
+            const container = document.getElementById('emailList');
+            if (!container) return;
+            const t = currentLang;
+            container.innerHTML = emails.map(email => `
+                <div class="email-item ${email.analyzed ? '' : 'unread'}" id="email-${email.id}">
+                    <div class="email-header">
+                        <div>
+                            <span class="email-sender">${email.from}</span>
+                            <span class="email-subject">${email.subject}</span>
+                        </div>
+                        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                            <span class="email-tag ${email.priority === 'high' ? 'high' : 'medium'}">${email.priority === 'high' ? '🔴 ' + getTranslation('urgentRecommendations') : '🟡 ' + getTranslation('medium')}</span>
+                            <span class="email-date">${email.date}</span>
+                            ${!email.analyzed ? `<button class="btn btn-small" onclick="analyzeEmail(${email.id})">${getTranslation('analyze')}</button>` : `<button class="btn btn-small btn-outline" onclick="toggleEmailBody(${email.id})"><i class="fas fa-eye"></i></button>`}
+                        </div>
+                    </div>
+                    <div class="email-body ${email.analyzed ? 'open' : ''}" id="body-${email.id}">
+                        <strong>📝 ${getTranslation('subject')}:</strong> ${email.body}
+                    </div>
+                    ${email.analyzed ? `
+                        <div class="email-ai-analysis open" id="ai-${email.id}">
+                            <strong>🧠 ${getTranslation('aiAnalysis')}:</strong><br>
+                            📌 <strong>${getTranslation('project')}:</strong> ${email.subject.includes('Kreuzberg') ? 'Stanovi Kreuzberg' : email.subject.includes('Mitte') ? 'Kancelarije Mitte' : email.subject.includes('40 stanova') ? 'Green Tower' : 'Nepoznat'}<br>
+                            💰 <strong>Iznos:</strong> ${email.body.match(/\d{1,3}(?:\.\d{3})*|\d+/) ? '€' + email.body.match(/\d{1,3}(?:\.\d{3})*|\d+/)[0] : 'Nepoznat'}<br>
+                            ${email.id === 2 ? '⚠️ <strong>Preporuka:</strong> Pošaljite tim za ispravku odmah!' : email.id === 4 ? '🎯 <strong>Preporuka:</strong> Ovo je odlična prilika! Pošaljite ponudu što pre.' : ''}
+                        </div>
+                        <div class="email-suggested-reply open" id="reply-${email.id}">
+                            <strong>✉️ ${getTranslation('suggestedReply')}:</strong><br>
+                            ${generateReply(email)}
+                            <br><button class="btn btn-small" style="margin-top:8px;" onclick="alert('${getTranslation('sendReply')}')"><i class="fas fa-paper-plane"></i> ${getTranslation('sendReply')}</button>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function generateReply(email) {
+            const lang = currentLang;
+            if (email.id === 1) return lang === 'sr' ? 'Poštovani Hans, zahvaljujemo na ponudi. Prihvatamo uslove.' : lang === 'de' ? 'Sehr geehrter Hans, wir danken für das Angebot.' : lang === 'es' ? 'Estimado Hans, agradecemos la oferta y la aceptamos.' : 'Dear Hans, thank you for the offer. We accept.';
+            if (email.id === 2) return lang === 'sr' ? 'Poštovani, izvinjavamo se. Šaljemo tim na ispravku sutra.' : lang === 'de' ? 'Wir entschuldigen uns und schicken das Team morgen.' : lang === 'es' ? 'Disculpe, enviamos el equipo mañana.' : 'We apologize and will send the team tomorrow.';
+            if (email.id === 4) return lang === 'sr' ? 'Poštovani, hvala na upitu. Dostavljamo ponudu u roku od 24h.' : lang === 'de' ? 'Vielen Dank für die Anfrage. Das Angebot folgt in 24h.' : lang === 'es' ? 'Gracias por su consulta. Enviaremos la oferta en 24h.' : 'Thank you for your inquiry. We will send the offer within 24h.';
+            return lang === 'sr' ? 'Hvala na poruci. Odgovorićemo uskoro.' : lang === 'de' ? 'Vielen Dank für Ihre Nachricht.' : lang === 'es' ? 'Gracias por su mensaje.' : 'Thank you for your message.';
+        }
+
+        function analyzeEmail(id) {
+            const email = emails.find(e => e.id === id);
+            if (email) {
+                email.analyzed = true;
+                renderEmails();
+            }
+        }
+
+        function toggleEmailBody(id) {
+            document.getElementById(`body-${id}`)?.classList.toggle('open');
+            document.getElementById(`ai-${id}`)?.classList.toggle('open');
+            document.getElementById(`reply-${id}`)?.classList.toggle('open');
+        }
+
+        function refreshEmails() {
+            if (emails.length < 5) {
+                emails.push({ id: Date.now(), from: 'novi@klijent.com', subject: 'Novi upit za saradnju', date: new Date().toLocaleString(), body: 'Zainteresovani smo za vaše usluge. Molimo vas da nam pošaljete okvirnu ponudu.', priority: 'medium', analyzed: false });
+            }
+            renderEmails();
+        }
+
+        // ============================================================
+        // 7. CRUD FUNKCIJE
+        // ============================================================
+        function addProject() {
+            const name = document.getElementById('projName').value.trim() || 'Novi projekat';
+            const budget = parseFloat(document.getElementById('projBudget').value) || 50000;
+            const cost = parseFloat(document.getElementById('projCost').value) || 45000;
+            projects.push({ id: projectIdCounter++, name, budget, cost });
+            renderAll();
+            updateCharts();
+            generateReport();
+        }
+
+        function deleteProject(id) {
+            projects = projects.filter(p => p.id !== id);
+            renderAll();
+            updateCharts();
+            generateReport();
+        }
+
+        function addWorker() {
+            const name = document.getElementById('workerName').value.trim() || 'Novi radnik';
+            const flag = document.getElementById('workerCountrySelect').value;
+            const countryMap = {
+                '🇷🇸': 'Srbija', '🇭🇷': 'Hrvatska', '🇧🇦': 'BiH', '🇲🇰': 'Makedonija',
+                '🇲🇪': 'Crna Gora', '🇸🇮': 'Slovenija', '🇩🇪': 'Nemačka',
+                '🇦🇹': 'Austrija', '🇪🇸': 'Španija'
+            };
+            const country = countryMap[flag] || 'Nepoznato';
+            const spec = document.getElementById('workerSpec').value.trim() || 'Keramika';
+            const rate = parseFloat(document.getElementById('workerRate').value) || 25;
+            workers.push({ id: workerIdCounter++, name, flag, country, spec, rate, project: '', free: true });
+            renderAll();
+            generateReport();
+        }
+
+        function deleteWorker(id) {
+            workers = workers.filter(w => w.id !== id);
+            renderAll();
+            generateReport();
+        }
+
+        function addCost() {
+            const date = document.getElementById('costDate').value || '2026-09-05';
+            const project = document.getElementById('costProject').value.trim() || 'Opšte';
+            const desc = document.getElementById('costDesc').value.trim() || 'Trošak';
+            const amount = parseFloat(document.getElementById('costAmount').value) || 100;
+            costs.push({ date, project, desc, amount });
+            renderAll();
+            updateCharts();
+            generateReport();
+        }
+
+        // ============================================================
+        // 8. CHART FUNKCIJE
+        // ============================================================
+        function updateCharts() {
+            // Dashboard chart
+            const ctx1 = document.getElementById('dashChart').getContext('2d');
+            if (dashChart) dashChart.destroy();
+            dashChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['Pon', 'Uto', 'Sri', 'Čet', 'Pet', 'Sub', 'Ned'],
+                    datasets: [{ label: 'Materijal (€)', data: [1200, 900, 1500, 1100, 1800, 700, 400], backgroundColor: '#c87a2b77', borderColor: '#c87a2b', borderWidth: 1 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#222' } }, x: { grid: { display: false } } } }
+            });
+
+            // Finance chart
+            const ctx2 = document.getElementById('financeChart').getContext('2d');
+            if (financeChart) financeChart.destroy();
+            const incomeLabel = getTranslation('monthlyRevenue') || 'Prihodi';
+            const expenseLabel = getTranslation('dailyCostEntry') || 'Rashodi';
+            financeChart = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: ['1.9.', '2.9.', '3.9.', '4.9.', '5.9.', '6.9.', '7.9.'],
+                    datasets: [
+                        { label: incomeLabel, data: [4200, 3800, 5000, 6200, 4800, 5300, 7000], borderColor: '#4caf50', fill: false, tension: 0.2 },
+                        { label: expenseLabel, data: [2800, 3100, 2600, 3900, 3400, 2900, 4100], borderColor: '#f44336', fill: false, tension: 0.2 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#aaa' } } }, scales: { y: { beginAtZero: true, grid: { color: '#222' } }, x: { grid: { display: false } } } }
+            });
+
+            // Margin chart
+            const ctx3 = document.getElementById('marginChart').getContext('2d');
+            if (marginChart) marginChart.destroy();
+            const marginData = projects.map(p => {
+                const profit = p.budget - p.cost;
+                return p.budget > 0 ? (profit / p.budget) * 100 : 0;
+            });
+            marginChart = new Chart(ctx3, {
+                type: 'doughnut',
+                data: {
+                    labels: projects.map(p => p.name),
+                    datasets: [{ data: marginData.map(m => Math.max(m, 0)), backgroundColor: ['#c87a2b', '#4caf50', '#ffc107', '#f44336'], borderColor: '#181818', borderWidth: 3 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#aaa' } } } }
+            });
+        }
+
+        // ============================================================
+        // 9. REPORT FUNKCIJA
+        // ============================================================
+        function generateReport() {
+            const totalBudget = projects.reduce((s, p) => s + p.budget, 0);
+            const totalCost = projects.reduce((s, p) => s + p.cost, 0);
+            const overallMargin = totalBudget > 0 ? ((totalBudget - totalCost) / totalBudget * 100) : 0;
+            const overBudget = projects.filter(p => p.cost > p.budget);
+            const freeWorkers = workers.filter(w => w.free);
+
+            const lang = currentLang;
+            let report = '';
+            if (lang === 'sr') {
+                report = `📋 DNEVNI IZVEŠTAJ – ${new Date().toLocaleDateString('sr-RS')}
+
+        📊 UKUPNO STANJE
+        • Aktivni projekti: ${projects.length}
+        • Ukupna marža: ${overallMargin.toFixed(1)}% ${overallMargin < 20 ? '⚠️ (ispod cilja 22%)' : '✅'}
+        • Projekcija prihoda: €${(totalBudget * 0.85).toFixed(0)}
+
+        🔴 HITNI PROBLEMI
+        ${overBudget.length > 0 ? overBudget.map(p => `• ${p.name}: €${(p.cost - p.budget).toLocaleString()} prekoračenja`).join('\n') : '✅ Nema prekoračenja!'}
+
+        👷 RADNICI IZ SVIH ZEMALJA
+        • Slobodni: ${freeWorkers.length > 0 ? freeWorkers.map(w => w.flag + ' ' + w.name).join(', ') : 'Nema slobodnih'}
+        • Ukupno: ${workers.length}
+        • Zemlje: ${[...new Set(workers.map(w => w.flag))].join(' ')}
+        ${freeWorkers.length > 0 ? `• Preporuka: Rasporedite ${freeWorkers[0].name} na hitan projekat` : ''}
+
+        💡 PREPORUKE ZA DANAS
+        ${overBudget.length > 0 ? '1. Zamenite dobavljača lepka – ušteda do €4.200' : '1. Nastavite sa trenutnim tempom'}
+        ${freeWorkers.length > 1 ? `2. Iskoristite slobodne radnike za nove projekte` : '2. Nema dovoljno slobodnih radnika'}
+        3. Pošaljite ponudu za novi projekat (preporučena marža 25%)
+
+        📈 PROGNOZA ZA MESEC
+        • Ako primenite preporuke: marža ~${(overallMargin + 3).toFixed(1)}%
+        • Bez promena: marža ~${overallMargin.toFixed(1)}%`;
+            } else if (lang === 'de') {
+                report = `📋 TÄGLICHER BERICHT – ${new Date().toLocaleDateString('de-DE')}
+        ... (${projects.length} Projekte, ${workers.length} Arbeiter) ...`;
+            } else if (lang === 'en') {
+                report = `📋 DAILY REPORT – ${new Date().toLocaleDateString('en-US')}
+        ... (${projects.length} projects, ${workers.length} workers) ...`;
+            } else if (lang === 'es') {
+                report = `📋 INFORME DIARIO – ${new Date().toLocaleDateString('es-ES')}
+        ... (${projects.length} proyectos, ${workers.length} trabajadores) ...`;
+            } else {
+                report = `📋 DNEVNI IZVEŠTAJ – ${new Date().toLocaleDateString('sr-RS')}
+        ... (${projects.length} projekata, ${workers.length} radnika) ...`;
+            }
+            document.getElementById('reportContent').textContent = report;
+        }
+
+        function refreshReport() { generateReport(); }
+
+        // ============================================================
+        // 10. VOICE COMMAND
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            const voiceBtn = document.getElementById('voiceBtn');
+            if (voiceBtn) {
+                voiceBtn.addEventListener('click', function() {
+                    const btn = this;
+                    const output = document.getElementById('voiceOutput');
+                    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                        output.textContent = '❌ ' + (currentLang === 'sr' ? 'Vaš pretraživač ne podržava glasovne naredbe.' : 'Your browser does not support voice commands.');
+                        return;
+                    }
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    const recognition = new SpeechRecognition();
+                    const langMap = { sr: 'sr-RS', hr: 'hr-HR', bs: 'bs-BA', mk: 'mk-MK', de: 'de-DE', en: 'en-US', es: 'es-ES' };
+                    recognition.lang = langMap[currentLang] || 'sr-RS';
+                    recognition.continuous = false;
+                    recognition.interimResults = false;
+
+                    btn.classList.add('listening');
+                    output.textContent = '🎤 ' + (currentLang === 'sr' ? 'Slušam...' : currentLang === 'en' ? 'Listening...' : currentLang === 'es' ? 'Escuchando...' : 'Listening...');
+
+                    recognition.onresult = function(event) {
+                        const transcript = event.results[0][0].transcript;
+                        output.textContent = `🗣️ "${transcript}"`;
+                        btn.classList.remove('listening');
+                        
+                        const lower = transcript.toLowerCase();
+                        if (lower.includes('projekat') || lower.includes('projekt') || lower.includes('project')) {
+                            output.textContent += '\n' + getTranslation('voiceProject');
+                        } else if (lower.includes('radnik') || lower.includes('radnici') || lower.includes('worker')) {
+                            const free = workers.filter(w => w.free).map(w => w.name).join(', ');
+                            output.textContent += '\n' + getTranslation('voiceWorkers', free || '');
+                        } else {
+                            output.textContent += '\n' + getTranslation('voiceDefault');
+                        }
+                    };
+                    recognition.onerror = function() {
+                        output.textContent = '❌ ' + (currentLang === 'sr' ? 'Greška. Pokušajte ponovo.' : 'Error. Try again.');
+                        btn.classList.remove('listening');
+                    };
+                    recognition.start();
+                });
+            }
+        });
+
+        // ============================================================
+        // 11. EMAIL DEMO
+        // ============================================================
+        function sendDemoRequest() {
+            const subject = encodeURIComponent('Zahtev za demo – BauMind AI');
+            const body = encodeURIComponent('Poštovani,\n\nZainteresovani smo za probnu verziju BauMind AI sistema za našu građevinsku firmu.\n\nMolimo Vas da nam pošaljete pristupne podatke.\n\nHvala!');
+            window.location.href = `mailto:sinisa.stantic@gmail.com?subject=${subject}&body=${body}`;
+            alert('📧 ' + (currentLang === 'sr' ? 'Otvoren je vaš email klijent.' : 'Your email client has been opened.'));
+        }
+
+        // ============================================================
+        // 12. NAVIGACIJA
+        // ============================================================
+        document.querySelectorAll('.nav-tabs button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.nav-tabs button').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const tab = this.dataset.tab;
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                document.getElementById(tab).classList.add('active');
+            });
+        });
+
+        // ============================================================
+        // 13. INIT
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            renderLanguageScreen();
+        });
+
+        // Inicijalni podaci
+        console.log('🏗️ BauMind AI – Ultimate Multilingual App');
+        console.log('🌍 Podržani jezici:', Object.keys(LANGUAGES).join(', '));
+        console.log('👷 Radnici iz svih zemalja:', workers.length);
+    </script>
+</body>
+</html>
