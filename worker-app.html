@@ -47,7 +47,6 @@
             display: block;
             margin-bottom: 10px;
         }
-
         .form-group {
             margin-bottom: 18px;
         }
@@ -112,7 +111,6 @@
             font-size: 14px;
             cursor: pointer;
         }
-
         .btn-submit {
             width: 100%;
             padding: 14px;
@@ -134,7 +132,6 @@
             transform: scale(1.02);
             box-shadow: 0 0 30px rgba(200, 122, 43, 0.3);
         }
-
         .success-msg {
             display: none;
             margin-top: 20px;
@@ -149,7 +146,6 @@
             margin-right: 10px;
             color: #4caf50;
         }
-
         .footer {
             text-align: center;
             margin-top: 25px;
@@ -160,8 +156,6 @@
             color: #c87a2b;
             text-decoration: none;
         }
-
-        /* Loading spinner */
         .spinner {
             display: none;
             width: 20px;
@@ -180,8 +174,6 @@
         .btn-submit.loading .btn-text {
             display: none;
         }
-
-        /* Hitne struke tagovi */
         .hitne-tag {
             display: inline-block;
             background: #2a1a1a;
@@ -195,7 +187,6 @@
     </style>
 </head>
 <body>
-
 <div class="container">
     <div class="logo">
         <i class="fas fa-helmet-safety"></i>
@@ -204,19 +195,14 @@
     </div>
 
     <form id="workerForm" enctype="multipart/form-data">
-        <!-- Ime -->
         <div class="form-group">
             <label>Ime i prezime <span class="required">*</span></label>
             <input type="text" id="regIme" placeholder="Unesite ime i prezime" required />
         </div>
-
-        <!-- Godine -->
         <div class="form-group">
             <label>Godine <span class="required">*</span></label>
             <input type="number" id="regGodine" placeholder="18-70" min="18" max="70" required />
         </div>
-
-        <!-- Struka -->
         <div class="form-group">
             <label>Glavna struka <span class="required">*</span></label>
             <select id="regStruka" required>
@@ -235,52 +221,37 @@
                 ⚡ Tražene struke: <span class="hitne-tag">Zidar</span> <span class="hitne-tag">Električar</span> <span class="hitne-tag">Keramičar</span>
             </div>
         </div>
-
-        <!-- Dodatne veštine -->
         <div class="form-group">
             <label>Dodatne veštine</label>
             <input type="text" id="regVestine" placeholder="npr. keramika, gips, pločice" />
         </div>
-
-        <!-- Telefon -->
         <div class="form-group">
             <label>Telefon <span class="required">*</span></label>
             <input type="tel" id="regTelefon" placeholder="+381 63 123 456" required />
         </div>
-
-        <!-- Email -->
         <div class="form-group">
             <label>Email</label>
             <input type="email" id="regEmail" placeholder="email@primer.com" />
         </div>
-
-        <!-- Grad -->
         <div class="form-group">
             <label>Grad <span class="required">*</span></label>
             <input type="text" id="regGrad" placeholder="Beograd, Novi Sad..." required />
         </div>
-
-        <!-- CV Upload -->
         <div class="form-group">
             <label>📎 Upload CV (PDF ili Word)</label>
             <input type="file" id="regCv" accept=".pdf,.doc,.docx" />
             <div style="margin-top:4px; font-size:12px; color:#666;">Maksimalna veličina: 5MB</div>
         </div>
-
-        <!-- Saglasnost -->
         <div class="checkbox-group">
             <input type="checkbox" id="regSaglasnost" required />
             <label for="regSaglasnost">Saglasan/na sam sa obradom podataka <span class="required">*</span></label>
         </div>
-
-        <!-- Submit dugme -->
         <button type="submit" class="btn-submit" id="submitBtn">
             <span class="btn-text"><i class="fas fa-paper-plane"></i> Pošalji prijavu</span>
             <span class="spinner"></span>
         </button>
     </form>
 
-    <!-- Poruka o uspehu -->
     <div class="success-msg" id="successMsg">
         <i class="fas fa-check-circle"></i>
         Prijava uspešno poslata! Hvala na interesovanju.
@@ -293,14 +264,11 @@
 </div>
 
 <script>
-    // ==================== HITNE STRUKE ====================
     const HITNE_STRUKE = ['zidar', 'elektricar', 'keramicar'];
 
-    // ==================== SLANJE FORME ====================
     document.getElementById('workerForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
-        // Validacija
         const ime = document.getElementById('regIme').value.trim();
         const godine = document.getElementById('regGodine').value;
         const struka = document.getElementById('regStruka').value;
@@ -315,11 +283,9 @@
         if (!grad) { alert('Unesite grad.'); return; }
         if (!saglasnost) { alert('Morate prihvatiti saglasnost za obradu podataka.'); return; }
 
-        // Simulacija slanja
         const btn = document.getElementById('submitBtn');
         btn.classList.add('loading');
 
-        // Prikupi podatke
         const radnik = {
             id: Date.now(),
             ime: ime,
@@ -334,12 +300,10 @@
             hitna: HITNE_STRUKE.includes(struka)
         };
 
-        // Čuvanje u localStorage (simulacija baze)
         let savedRadnici = JSON.parse(localStorage.getItem('baumind_radnici') || '[]');
         savedRadnici.push(radnik);
         localStorage.setItem('baumind_radnici', JSON.stringify(savedRadnici));
 
-        // Ako je hitna struka -> čuvamo alert
         if (radnik.hitna) {
             let alerti = JSON.parse(localStorage.getItem('baumind_alerti') || '[]');
             alerti.push({
@@ -352,38 +316,29 @@
             localStorage.setItem('baumind_alerti', JSON.stringify(alerti));
         }
 
-        // Uspeh
         setTimeout(() => {
             btn.classList.remove('loading');
             document.getElementById('successMsg').style.display = 'block';
             document.getElementById('workerForm').reset();
-            
-            // Scroll do poruke
             document.getElementById('successMsg').scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 1500);
     });
 
-    // ==================== AUTO-FILL ZA TEST ====================
-    // (ukloni ovo u produkciji)
+    // Auto-fill za testiranje
     document.addEventListener('DOMContentLoaded', function() {
-        // Demo podaci za brže testiranje
-        if (localStorage.getItem('baumind_demo_filled') !== 'true') {
-            // Samo ako nije popunjeno
-            setTimeout(() => {
-                if (!document.getElementById('regIme').value) {
-                    document.getElementById('regIme').value = 'Petar Petrović';
-                    document.getElementById('regGodine').value = '35';
-                    document.getElementById('regStruka').value = 'zidar';
-                    document.getElementById('regVestine').value = 'keramika, gips';
-                    document.getElementById('regTelefon').value = '+381 64 123 456';
-                    document.getElementById('regEmail').value = 'petar@email.com';
-                    document.getElementById('regGrad').value = 'Beograd';
-                    document.getElementById('regSaglasnost').checked = true;
-                }
-            }, 300);
-        }
+        setTimeout(() => {
+            if (!document.getElementById('regIme').value) {
+                document.getElementById('regIme').value = 'Petar Petrović';
+                document.getElementById('regGodine').value = '35';
+                document.getElementById('regStruka').value = 'zidar';
+                document.getElementById('regVestine').value = 'keramika, gips';
+                document.getElementById('regTelefon').value = '+381 64 123 456';
+                document.getElementById('regEmail').value = 'petar@email.com';
+                document.getElementById('regGrad').value = 'Beograd';
+                document.getElementById('regSaglasnost').checked = true;
+            }
+        }, 300);
     });
 </script>
-
 </body>
 </html>
