@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👷 Worker Application – BauMind AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, system-ui, sans-serif; }
+        body { background: #0d0d0d; color: #e0e0e0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .container { max-width: 950px; width: 100%; background: #181818; border-radius: 30px; padding: 40px; border: 1px solid #2a2a2a; box-shadow: 0 20px 60px rgba(0,0,0,0.8); }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid #2a2a2a; padding-bottom: 20px; }
+        .header .logo { font-size: 32px; font-weight: 800; }
+        .header .logo span { background: linear-gradient(135deg, #c87a2b, #e8a84c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header .logo i { color: #c87a2b; }
+        .header p { color: #888; margin-top: 8px; font-size: 16px; }
+        
+        .lang-selector { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; background: #121212; padding: 6px; border-radius: 40px; border: 1px solid #2a2a2a; }
+        .lang-selector button { background: transparent; border: none; color: #888; padding: 6px 14px; border-radius: 30px; font-weight: 700; font-size: 12px; cursor: pointer; transition: 0.2s; }
+        .lang-selector button.active { background: #c87a2b; color: #0a0a0a; }
+        .lang-selector button:hover:not(.active) { background: #2a2a2a; color: #fff; }
+
+        .progress-bar { display: flex; justify-content: space-between; margin-bottom: 30px; position: relative; }
+        .progress-bar::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: #2a2a2a; transform: translateY(-50%); z-index: 0; }
+        .step { display: flex; flex-direction: column; align-items: center; z-index: 1; cursor: pointer; }
+        .step-circle { width: 40px; height: 40px; border-radius: 50%; background: #2a2a2a; border: 2px solid #444; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #666; transition: 0.3s; }
+        .step.active .step-circle { background: #c87a2b; border-color: #c87a2b; color: #0a0a0a; }
+        .step.done .step-circle { background: #4caf50; border-color: #4caf50; color: #0a0a0a; }
+        .step-label { font-size: 10px; color: #666; margin-top: 6px; text-align: center; }
+
+        .form-step { display: none; animation: fadeIn 0.4s ease; }
+        .form-step.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        .form-group { margin-bottom: 22px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: #ddd; }
+        .form-group label .required { color: #f44336; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #333; background: #121212; color: #e0e0e0; font-size: 15px; transition: 0.2s; outline: none; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #c87a2b; box-shadow: 0 0 0 3px rgba(200, 122, 43, 0.2); }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        .form-group .hint { font-size: 12px; color: #666; margin-top: 4px; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+        .birth-year-selector { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .birth-year-selector select { flex: 1; min-width: 80px; padding: 12px 16px; border-radius: 12px; border: 1px solid #333; background: #121212; color: #e0e0e0; font-size: 15px; outline: none; cursor: pointer; }
+        .birth-year-selector select:focus { border-color: #c87a2b; }
+        .birth-year-hint { font-size: 13px; color: #666; margin-top: 6px; }
+
+        .file-upload { border: 2px dashed #333; border-radius: 16px; padding: 30px; text-align: center; cursor: pointer; transition: 0.3s; background: #0d0d0d; }
+        .file-upload:hover { border-color: #c87a2b; background: #1a1a1a; }
+        .file-upload i { font-size: 48px; color: #c87a2b; margin-bottom: 12px; }
+        .file-upload p { color: #888; font-size: 14px; }
+        .file-upload .file-name { color: #c87a2b; font-weight: 600; margin-top: 8px; }
+        .file-upload input[type="file"] { display: none; }
+
+        .btn { padding: 14px 32px; border-radius: 40px; font-weight: 700; font-size: 16px; border: none; cursor: pointer; transition: 0.3s; display: inline-flex; align-items: center; gap: 10px; }
+        .btn-primary { background: #c87a2b; color: #0a0a0a; }
+        .btn-primary:hover { background: #e8a84c; transform: scale(1.02); }
+        .btn-secondary { background: #2a2a2a; color: #aaa; }
+        .btn-secondary:hover { background: #3a3a3a; }
+        .btn-success { background: #4caf50; color: #0a0a0a; }
+        .btn-success:hover { background: #66bb6a; }
+
+        .form-actions { display: flex; justify-content: space-between; margin-top: 30px; padding-top: 20px; border-top: 1px solid #2a2a2a; }
+
+        .success-message { text-align: center; padding: 40px 20px; }
+        .success-message i { font-size: 72px; color: #4caf50; margin-bottom: 20px; }
+        .success-message h2 { color: #4caf50; margin-bottom: 12px; }
+        .success-message p { color: #aaa; font-size: 16px; }
+
+        .ai-score { background: #0a1a0a; border-radius: 16px; padding: 16px 20px; border-left: 4px solid #4caf50; margin-top: 10px; display: none; }
+        .ai-score.show { display: block; }
+        .ai-score .score-number { font-size: 28px; font-weight: 900; color: #4caf50; }
+
+        .tag { display: inline-block; background: #2a2a2a; padding: 4px 14px; border-radius: 30px; font-size: 12px; color: #aaa; margin-right: 6px; margin-top: 4px; }
+        .tag.high { background: #1a3a1a; color: #81c784; }
+
+        @media (max-width: 700px) {
+            .container { padding: 20px; }
+            .grid-2 { grid-template-columns: 1fr; }
+            .progress-bar { flex-wrap: wrap; gap: 10px; justify-content: center; }
+            .progress-bar::before { display: none; }
+            .step { flex: 1; min-width: 50px; }
+            .birth-year-selector { flex-direction: column; }
+            .birth-year-selector select { width: 100%; }
+            .lang-selector button { font-size: 10px; padding: 4px 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="logo">
+                <i class="fas fa-helmet-safety"></i>
+                <span>BauMind AI</span>
+            </div>
+            <p id="headerSub"><i class="fas fa-user-plus"></i> Prijava za rad preko naše agencije</p>
+            <p style="font-size:13px; color:#666; margin-top:4px;" id="headerRequired">Sva polja sa <span style="color:#f44336;">*</span> su obavezna</p>
+        </div>
+
+        <!-- JEZIČKI SELECTOR -->
+        <div class="lang-selector">
+            <button class="active" data-lang="sr">🇷🇸 SR</button>
+            <button data-lang="hr">🇭🇷 HR</button>
+            <button data-lang="bs">🇧🇦 BS</button>
+            <button data-lang="mk">🇲🇰 MK</button>
+            <button data-lang="de">🇩🇪 DE</button>
+            <button data-lang="en">🇬🇧 EN</button>
+            <button data-lang="es">🇪🇸 ES</button>
+        </div>
+
+        <!-- PROGRESS BAR -->
+        <div class="progress-bar" id="progressBar">
+            <div class="step active" data-step="1">
+                <div class="step-circle">1</div>
+                <span class="step-label" data-i18n="step1">Lični podaci</span>
+            </div>
+            <div class="step" data-step="2">
+                <div class="step-circle">2</div>
+                <span class="step-label" data-i18n="step2">Iskustvo</span>
+            </div>
+            <div class="step" data-step="3">
+                <div class="step-circle">3</div>
+                <span class="step-label" data-i18n="step3">Dokumenti</span>
+            </div>
+            <div class="step" data-step="4">
+                <div class="step-circle">4</div>
+                <span class="step-label" data-i18n="step4">Očekivanja</span>
+            </div>
+            <div class="step" data-step="5">
+                <div class="step-circle">5</div>
+                <span class="step-label" data-i18n="step5">Završetak</span>
+            </div>
+        </div>
+
+        <!-- FORM -->
+        <form id="workerForm" onsubmit="return submitForm(event)">
+
+            <!-- STEP 1: LIČNI PODACI -->
+            <div class="form-step active" data-step="1">
+                <h2 style="margin-bottom:20px; font-size:24px;" data-i18n="step1Title">📋 Lični podaci</h2>
+                
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label data-i18n="fullName">Ime i prezime <span class="required">*</span></label>
+                        <input type="text" id="fullName" placeholder="npr. Marko Petrović" required>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="birthDate">Datum rođenja <span class="required">*</span></label>
+                        <div class="birth-year-selector">
+                            <select id="birthDay" required>
+                                <option value="" data-i18n="day">Dan</option>
+                                <script>
+                                    for (let i = 1; i <= 31; i++) {
+                                        document.write(`<option value="${i}">${i}</option>`);
+                                    }
+                                </script>
+                            </select>
+                            <select id="birthMonth" required>
+                                <option value="" data-i18n="month">Mesec</option>
+                                <option value="1" data-i18n="jan">Januar</option>
+                                <option value="2" data-i18n="feb">Februar</option>
+                                <option value="3" data-i18n="mar">Mart</option>
+                                <option value="4" data-i18n="apr">April</option>
+                                <option value="5" data-i18n="may">Maj</option>
+                                <option value="6" data-i18n="jun">Jun</option>
+                                <option value="7" data-i18n="jul">Jul</option>
+                                <option value="8" data-i18n="aug">Avgust</option>
+                                <option value="9" data-i18n="sep">Septembar</option>
+                                <option value="10" data-i18n="oct">Oktobar</option>
+                                <option value="11" data-i18n="nov">Novembar</option>
+                                <option value="12" data-i18n="dec">Decembar</option>
+                            </select>
+                            <select id="birthYear" required>
+                                <option value="" data-i18n="year">Godina</option>
+                                <script>
+                                    const currentYear = new Date().getFullYear();
+                                    for (let y = currentYear; y >= 1950; y--) {
+                                        document.write(`<option value="${y}">${y}</option>`);
+                                    }
+                                </script>
+                            </select>
+                        </div>
+                        <div class="birth-year-hint" id="ageHint">🔹 Izaberite godinu → automatski računamo godine</div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label data-i18n="email">Email <span class="required">*</span></label>
+                        <input type="email" id="email" placeholder="marko@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="phone">Telefon <span class="required">*</span></label>
+                        <input type="tel" id="phone" placeholder="+43 660 123 456" required>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label data-i18n="address">Adresa stanovanja <span class="required">*</span></label>
+                        <input type="text" id="address" placeholder="Ulica i broj, grad, država" required>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="country">Država porekla</label>
+                        <select id="country">
+                            <option value="srbija" data-i18n="rs">Srbija</option>
+                            <option value="hrvatska" data-i18n="hr">Hrvatska</option>
+                            <option value="bosna" data-i18n="ba">Bosna i Hercegovina</option>
+                            <option value="makedonija" data-i18n="mk">Severna Makedonija</option>
+                            <option value="crna_gora" data-i18n="me">Crna Gora</option>
+                            <option value="slovenija" data-i18n="si">Slovenija</option>
+                            <option value="njemacka" data-i18n="de">Nemačka</option>
+                            <option value="austrija" data-i18n="at">Austrija</option>
+                            <option value="spanija" data-i18n="es">Španija</option>
+                            <option value="drugo" data-i18n="other">Drugo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label data-i18n="workCountry">Država u kojoj želite da radite <span class="required">*</span></label>
+                    <select id="workCountry" required>
+                        <option value="" data-i18n="choose">Izaberite...</option>
+                        <option value="austrija" data-i18n="at">Austrija</option>
+                        <option value="njemacka" data-i18n="de">Nemačka</option>
+                        <option value="srbija" data-i18n="rs">Srbija</option>
+                        <option value="hrvatska" data-i18n="hr">Hrvatska</option>
+                        <option value="spanija" data-i18n="es">Španija</option>
+                        <option value="sve" data-i18n="all">Sve (fleksibilan/na)</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <span></span>
+                    <button type="button" class="btn btn-primary" onclick="nextStep(2)"><span data-i18n="next">Dalje</span> <i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- STEP 2: ISKUSTVO I SPECIJALNOST -->
+            <div class="form-step" data-step="2">
+                <h2 style="margin-bottom:20px; font-size:24px;" data-i18n="step2Title">🔧 Iskustvo i specijalnost</h2>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label data-i18n="specialty">Specijalnost <span class="required">*</span></label>
+                        <select id="specialty" required>
+                            <option value="" data-i18n="choose">Izaberite...</option>
+                            <option value="keramicar" data-i18n="tiler">Keramičar</option>
+                            <option value="zidar" data-i18n="bricklayer">Zidar</option>
+                            <option value="monter_suhe_gradnje" data-i18n="drywall">Monter suhe gradnje</option>
+                            <option value="hidroizolater" data-i18n="waterproofer">Hidroizolater</option>
+                            <option value="fuger" data-i18n="fuger">Fuger</option>
+                            <option value="podopolagac" data-i18n="floorer">Podopolagač</option>
+                            <option value="fasader" data-i18n="fasader">Fasader</option>
+                            <option value="vodoinstalater" data-i18n="plumber">Vodoinstalater</option>
+                            <option value="elektricar" data-i18n="electrician">Električar</option>
+                            <option value="opsti_radnik" data-i18n="general">Opšti radnik</option>
+                            <option value="drugo" data-i18n="other">Drugo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="experience">Godine iskustva <span class="required">*</span></label>
+                        <select id="experience" required>
+                            <option value="" data-i18n="choose">Izaberite...</option>
+                            <option value="0-1" data-i18n="exp0">0-1 godina</option>
+                            <option value="2-3" data-i18n="exp2">2-3 godine</option>
+                            <option value="4-5" data-i18n="exp4">4-5 godina</option>
+                            <option value="6-10" data-i18n="exp6">6-10 godina</option>
+                            <option value="10+" data-i18n="exp10">10+ godina</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label data-i18n="certificates">Sertifikati i dozvole (višestruki izbor)</label>
+                    <div class="grid-2" style="margin-top:8px;">
+                        <label style="display:flex; align-items:center; gap:10px; color:#aaa; font-weight:400; font-size:14px;">
+                            <input type="checkbox" value="rad_na_visini"> <span data-i18n="certHeight">Dozvola za rad na visini</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:10px; color:#aaa; font-weight:400; font-size:14px;">
+                            <input type="checkbox" value="vozi_b"> <span data-i18n="certB">B kategorija (vozačka)</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:10px; color:#aaa; font-weight:400; font-size:14px;">
+                            <input type="checkbox" value="vozi_c"> <span data-i18n="certC">C kategorija (vozačka)</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:10px; color:#aaa; font-weight:400; font-size:14px;">
+                            <input type="checkbox" value="sertifikat_a"> <span data-i18n="certA">Sertifikat A (specijalistički)</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:10px; color:#aaa; font-weight:400; font-size:14px;">
+                            <input type="checkbox" value="sertifikat_b"> <span data-i18n="certB2">Sertifikat B (osnovni)</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:10px; color:#aaa; font-weight:400; font-size:14px;">
+                            <input type="checkbox" value="lestve"> <span data-i18n="certLadder">Lestve (rad na visini)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label data-i18n="recommendation">Radna preporuka (od prethodnog poslodavca)</label>
+                    <textarea id="recommendation" data-i18n-placeholder="recPlaceholder" placeholder="Napišite kratku preporuku ili kontakt osobe koja može da vas preporuči..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label data-i18n="experienceDesc">Kratak opis vašeg iskustva <span class="required">*</span></label>
+                    <textarea id="experienceDesc" data-i18n-placeholder="expPlaceholder" placeholder="Opišite vaše dosadašnje radno iskustvo, na kojim projektima ste radili, koje materijale poznajete..." required></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="prevStep(1)"><i class="fas fa-arrow-left"></i> <span data-i18n="back">Nazad</span></button>
+                    <button type="button" class="btn btn-primary" onclick="nextStep(3)"><span data-i18n="next">Dalje</span> <i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- STEP 3: DOKUMENTI -->
+            <div class="form-step" data-step="3">
+                <h2 style="margin-bottom:20px; font-size:24px;" data-i18n="step3Title">📎 Dokumenti</h2>
+
+                <div class="form-group">
+                    <label data-i18n="cv">CV / Radna biografija <span class="required">*</span></label>
+                    <div class="file-upload" onclick="document.getElementById('cvFile').click()">
+                        <i class="fas fa-file-pdf"></i>
+                        <p data-i18n="cvUpload">Kliknite ili prevucite CV (PDF, DOCX)</p>
+                        <div class="file-name" id="cvFileName" data-i18n="noFile">Nije odabran fajl</div>
+                        <input type="file" id="cvFile" accept=".pdf,.docx" onchange="handleFileUpload('cvFile', 'cvFileName')" required>
+                    </div>
+                    <div class="hint" data-i18n="maxSize">Maksimalna veličina: 10MB</div>
+                </div>
+
+                <div class="form-group">
+                    <label data-i18n="photo">Fotografija (lična)</label>
+                    <div class="file-upload" onclick="document.getElementById('photoFile').click()">
+                        <i class="fas fa-user-circle"></i>
+                        <p data-i18n="photoUpload">Kliknite ili prevucite fotografiju (JPG, PNG)</p>
+                        <div class="file-name" id="photoFileName" data-i18n="noFile">Nije odabran fajl</div>
+                        <input type="file" id="photoFile" accept=".jpg,.jpeg,.png" onchange="handleFileUpload('photoFile', 'photoFileName')">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label data-i18n="certUpload">Sertifikati i dozvole (PDF, slike)</label>
+                    <div class="file-upload" onclick="document.getElementById('certFile').click()">
+                        <i class="fas fa-certificate"></i>
+                        <p data-i18n="certUploadText">Kliknite ili prevucite sertifikate</p>
+                        <div class="file-name" id="certFileName" data-i18n="noFile">Nije odabran fajl</div>
+                        <input type="file" id="certFile" accept=".pdf,.jpg,.jpeg,.png" multiple onchange="handleFileUpload('certFile', 'certFileName')">
+                    </div>
+                    <div class="hint" data-i18n="multiFile">Možete odabrati više fajlova</div>
+                </div>
+
+                <div class="form-group">
+                    <label data-i18n="workPermit">Radna dozvola / Boravišna dozvola (ako postoji)</label>
+                    <div class="file-upload" onclick="document.getElementById('workPermitFile').click()">
+                        <i class="fas fa-id-card"></i>
+                        <p data-i18n="permitUpload">Kliknite ili prevucite dozvolu</p>
+                        <div class="file-name" id="workPermitFileName" data-i18n="noFile">Nije odabran fajl</div>
+                        <input type="file" id="workPermitFile" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileUpload('workPermitFile', 'workPermitFileName')">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="prevStep(2)"><i class="fas fa-arrow-left"></i> <span data-i18n="back">Nazad</span></button>
+                    <button type="button" class="btn btn-primary" onclick="nextStep(4)"><span data-i18n="next">Dalje</span> <i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- STEP 4: OČEKIVANJA -->
+            <div class="form-step" data-step="4">
+                <h2 style="margin-bottom:20px; font-size:24px;" data-i18n="step4Title">💰 Očekivanja</h2>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label data-i18n="expectedSalary">Očekivana plata (bruto po satu) <span class="required">*</span></label>
+                        <input type="number" id="expectedSalary" placeholder="npr. 28" step="0.5" min="10" required>
+                        <div class="hint" data-i18n="salaryHint">U evrima (€), bruto iznos</div>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="minSalary">Minimalna plata (po satu)</label>
+                        <input type="number" id="minSalary" placeholder="npr. 22" step="0.5" min="10">
+                        <div class="hint" data-i18n="minSalaryHint">Najmanje što biste prihvatili</div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label data-i18n="monthlyHours">Mesečni broj sati koje možete da radite <span class="required">*</span></label>
+                        <select id="monthlyHours" required>
+                            <option value="" data-i18n="choose">Izaberite...</option>
+                            <option value="80" data-i18n="hours80">Do 80 sati (polu-radno)</option>
+                            <option value="120" data-i18n="hours120">Do 120 sati</option>
+                            <option value="160" data-i18n="hours160">Do 160 sati (puno radno)</option>
+                            <option value="200" data-i18n="hours200">Do 200 sati (prekovremeno)</option>
+                            <option value="240" data-i18n="hours240">Do 240 sati (maksimalno)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="availability">Dostupnost <span class="required">*</span></label>
+                        <select id="availability" required>
+                            <option value="" data-i18n="choose">Izaberite...</option>
+                            <option value="odmah" data-i18n="availNow">Odmah (od danas)</option>
+                            <option value="1_nedelja" data-i18n="avail1w">Za 1 nedelju</option>
+                            <option value="2_nedelje" data-i18n="avail2w">Za 2 nedelje</option>
+                            <option value="1_mesec" data-i18n="avail1m">Za 1 mesec</option>
+                            <option value="dogovor" data-i18n="availAgree">Po dogovoru</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label data-i18n="notes">Dodatne napomene</label>
+                    <textarea id="notes" data-i18n-placeholder="notesPlaceholder" placeholder="Npr. 'Radim samo u Beču', 'Imam svoj alat', 'Spreman za putovanja'..."></textarea>
+                </div>
+
+                <!-- AI OCENA -->
+                <div class="ai-score show" id="aiScore">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+                        <div>
+                            <strong data-i18n="aiAnalysis">🧠 AI analiza vašeg profila:</strong>
+                            <div style="margin-top:8px;">
+                                <span class="tag high" id="aiTag1">✓ Keramičar</span>
+                                <span class="tag high" id="aiTag2">✓ 6+ godina iskustva</span>
+                                <span class="tag" id="aiTag3">○ Nema dozvolu za visinu</span>
+                            </div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div class="score-number" id="aiScoreNumber">78%</div>
+                            <div style="font-size:12px; color:#666;" data-i18n="qualification">Kvalifikovanost</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:12px; padding-top:12px; border-top:1px solid #1a2a1a; font-size:13px; color:#aaa;">
+                        <i class="fas fa-info-circle" style="color:#c87a2b;"></i>
+                        <span id="aiRecommendation" data-i18n="aiRecDefault">Preporučujemo intervju. Kandidat ima dobro iskustvo, ali nedostaje dozvola za visinu.</span>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="prevStep(3)"><i class="fas fa-arrow-left"></i> <span data-i18n="back">Nazad</span></button>
+                    <button type="submit" class="btn btn-success"><i class="fas fa-paper-plane"></i> <span data-i18n="submit">Pošalji prijavu</span></button>
+                </div>
+            </div>
+
+            <!-- STEP 5: SUCCESS -->
+            <div class="form-step" data-step="5">
+                <div class="success-message">
+                    <i class="fas fa-check-circle"></i>
+                    <h2 data-i18n="successTitle">✅ Prijava uspešno poslata!</h2>
+                    <p data-i18n="successDesc">Vaša prijava je stigla. Naš AI sistem je analizirao vaš profil.</p>
+                    <div style="background:#1a1a1a; border-radius:16px; padding:20px; margin-top:20px; text-align:left;">
+                        <p style="color:#aaa; font-size:14px;">
+                            <i class="fas fa-clock" style="color:#c87a2b;"></i> 
+                            <strong data-i18n="nextSteps">Sledeći koraci:</strong>
+                        </p>
+                        <ul style="list-style:none; padding:0; margin-top:12px; font-size:14px; color:#aaa; line-height:2;">
+                            <li data-i18n="stepEmail">📧 Poslaćemo vam potvrdu na email</li>
+                            <li data-i18n="stepInterview">📅 Ako prođete AI filter, zakazaćemo intervju u roku od 48h</li>
+                            <li data-i18n="stepProfile">📄 Vaš profil će biti dostupan klijentima</li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-primary" style="margin-top:20px;" onclick="resetForm()">
+                        <i class="fas fa-plus"></i> <span data-i18n="newApp">Nova prijava</span>
+                    </button>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <script>
+        // ==================== PREVODI ====================
+        const translations = {
+            sr: {
+                step1: 'Lični podaci', step2: 'Iskustvo', step3: 'Dokumenti', step4: 'Očekivanja', step5: 'Završetak',
+                step1Title: '📋 Lični podaci', step2Title: '🔧 Iskustvo i specijalnost', step3Title: '📎 Dokumenti', step4Title: '💰 Očekivanja',
+                fullName: 'Ime i prezime *', birthDate: 'Datum rođenja *', email: 'Email *', phone: 'Telefon *',
+                address: 'Adresa stanovanja *', country: 'Država porekla', workCountry: 'Država u kojoj želite da radite *',
+                day: 'Dan', month: 'Mesec', year: 'Godina', jan: 'Januar', feb: 'Februar', mar: 'Mart', apr: 'April',
+                may: 'Maj', jun: 'Jun', jul: 'Jul', aug: 'Avgust', sep: 'Septembar', oct: 'Oktobar', nov: 'Novembar', dec: 'Decembar',
+                rs: 'Srbija', hr: 'Hrvatska', ba: 'Bosna i Hercegovina', mk: 'Severna Makedonija', me: 'Crna Gora',
+                si: 'Slovenija', de: 'Nemačka', at: 'Austrija', es: 'Španija', other: 'Drugo', all: 'Sve (fleksibilan/na)',
+                choose: 'Izaberite...', next: 'Dalje', back: 'Nazad', submit: 'Pošalji prijavu',
+                specialty: 'Specijalnost *', experience: 'Godine iskustva *',
+                tiler: 'Keramičar', bricklayer: 'Zidar', drywall: 'Monter suhe gradnje', waterproofer: 'Hidroizolater',
+                fuger: 'Fuger', floorer: 'Podopolagač', fasader: 'Fasader', plumber: 'Vodoinstalater',
+                electrician: 'Električar', general: 'Opšti radnik',
+                exp0: '0-1 godina', exp2: '2-3 godine', exp4: '4-5 godina', exp6: '6-10 godina', exp10: '10+ godina',
+                certificates: 'Sertifikati i dozvole (višestruki izbor)',
+                certHeight: 'Dozvola za rad na visini', certB: 'B kategorija (vozačka)', certC: 'C kategorija (vozačka)',
+                certA: 'Sertifikat A (specijalistički)', certB2: 'Sertifikat B (osnovni)', certLadder: 'Lestve (rad na visini)',
+                recommendation: 'Radna preporuka (od prethodnog poslodavca)',
+                recPlaceholder: 'Napišite kratku preporuku ili kontakt osobe koja može da vas preporuči...',
+                experienceDesc: 'Kratak opis vašeg iskustva *',
+                expPlaceholder: 'Opišite vaše dosadašnje radno iskustvo, na kojim projektima ste radili, koje materijale poznajete...',
+                cv: 'CV / Radna biografija *', cvUpload: 'Kliknite ili prevucite CV (PDF, DOCX)',
+                photo: 'Fotografija (lična)', photoUpload: 'Kliknite ili prevucite fotografiju (JPG, PNG)',
+                certUpload: 'Sertifikati i dozvole (PDF, slike)', certUploadText: 'Kliknite ili prevucite sertifikate',
+                workPermit: 'Radna dozvola / Boravišna dozvola (ako postoji)',
+                permitUpload: 'Kliknite ili prevucite dozvolu',
+                noFile: 'Nije odabran fajl', maxSize: 'Maksimalna veličina: 10MB', multiFile: 'Možete odabrati više fajlova',
+                expectedSalary: 'Očekivana plata (bruto po satu) *', salaryHint: 'U evrima (€), bruto iznos',
+                minSalary: 'Minimalna plata (po satu)', minSalaryHint: 'Najmanje što biste prihvatili',
+                monthlyHours: 'Mesečni broj sati koje možete da radite *',
+                hours80: 'Do 80 sati (polu-radno)', hours120: 'Do 120 sati', hours160: 'Do 160 sati (puno radno)',
+                hours200: 'Do 200 sati (prekovremeno)', hours240: 'Do 240 sati (maksimalno)',
+                availability: 'Dostupnost *', availNow: 'Odmah (od danas)', avail1w: 'Za 1 nedelju',
+                avail2w: 'Za 2 nedelje', avail1m: 'Za 1 mesec', availAgree: 'Po dogovoru',
+                notes: 'Dodatne napomene', notesPlaceholder: 'Npr. "Radim samo u Beču", "Imam svoj alat"...',
+                aiAnalysis: '🧠 AI analiza vašeg profila:', qualification: 'Kvalifikovanost',
+                aiRecDefault: 'Preporučujemo intervju. Kandidat ima dobro iskustvo.',
+                successTitle: '✅ Prijava uspešno poslata!',
+                successDesc: 'Vaša prijava je stigla. Naš AI sistem je analizirao vaš profil.',
+                nextSteps: 'Sledeći koraci:', stepEmail: '📧 Poslaćemo vam potvrdu na email',
+                stepInterview: '📅 Ako prođete AI filter, zakazaćemo intervju u roku od 48h',
+                stepProfile: '📄 Vaš profil će biti dostupan klijentima',
+                newApp: 'Nova prijava',
+                headerSub: 'Prijava za rad preko naše agencije',
+                headerRequired: 'Sva polja sa * su obavezna'
+            },
+            hr: {
+                step1: 'Osobni podaci', step2: 'Iskustvo', step3: 'Dokumenti', step4: 'Očekivanja', step5: 'Završetak',
+                step1Title: '📋 Osobni podaci', step2Title: '🔧 Iskustvo i specijalnost', step3Title: '📎 Dokumenti', step4Title: '💰 Očekivanja',
+                fullName: 'Ime i prezime *', birthDate: 'Datum rođenja *', email: 'Email *', phone: 'Telefon *',
+                address: 'Adresa stanovanja *', country: 'Država porijekla', workCountry: 'Država u kojoj želite raditi *',
+                day: 'Dan', month: 'Mjesec', year: 'Godina', jan: 'Siječanj', feb: 'Veljača', mar: 'Ožujak',
+                apr: 'Travanj', may: 'Svibanj', jun: 'Lipanj', jul: 'Srpanj', aug: 'Kolovoz',
+                sep: 'Rujan', oct: 'Listopad', nov: 'Studeni', dec: 'Prosinac',
+                rs: 'Srbija', hr: 'Hrvatska', ba: 'Bosna i Hercegovina', mk: 'Sjeverna Makedonija', me: 'Crna Gora',
+                si: 'Slovenija', de: 'Njemačka', at: 'Austrija', es: 'Španjolska', other: 'Drugo', all: 'Sve (fleksibilan/na)',
+                choose: 'Odaberite...', next: 'Dalje', back: 'Natrag', submit: 'Pošalji prijavu',
+                specialty: 'Specijalnost *', experience: 'Godine iskustva *',
+                tiler: 'Keramičar', bricklayer: 'Zidar', drywall: 'Monter suhe gradnje', waterproofer: 'Hidroizolater',
+                fuger: 'Fuger', floorer: 'Podopolagač', fasader: 'Fasader', plumber: 'Vodoinstalater',
+                electrician: 'Električar', general: 'Opći radnik',
+                exp0: '0-1 godina', exp2: '2-3 godine', exp4: '4-5 godina', exp6: '6-10 godina', exp10: '10+ godina',
+                certificates: 'Certifikati i dozvole (višestruki izbor)',
+                certHeight: 'Dozvola za rad na visini', certB: 'B kategorija (vozačka)', certC: 'C kategorija (vozačka)',
+                certA: 'Certifikat A (specijalistički)', certB2: 'Certifikat B (osnovni)', certLadder: 'Ljestve (rad na visini)',
+                recommendation: 'Radna preporuka (od prethodnog poslodavca)',
+                recPlaceholder: 'Napišite kratku preporuku ili kontakt osobe koja vas može preporučiti...',
+                experienceDesc: 'Kratak opis vašeg iskustva *',
+                expPlaceholder: 'Opišite vaše dosadašnje radno iskustvo, na kojim projektima ste radili...',
+                cv: 'CV / Radna biografija *', cvUpload: 'Kliknite ili prevucite CV (PDF, DOCX)',
+                photo: 'Fotografija (osobna)', photoUpload: 'Kliknite ili prevucite fotografiju (JPG, PNG)',
+                certUpload: 'Certifikati i dozvole (PDF, slike)', certUploadText: 'Kliknite ili prevucite certifikate',
+                workPermit: 'Radna dozvola / Boravišna dozvola (ako postoji)',
+                permitUpload: 'Kliknite ili prevucite dozvolu',
+                noFile: 'Nije odabran fajl', maxSize: 'Maksimalna veličina: 10MB', multiFile: 'Možete odabrati više fajlova',
+                expectedSalary: 'Očekivana plaća (bruto po satu) *', salaryHint: 'U eurima (€), bruto iznos',
+                minSalary: 'Minimalna plaća (po satu)', minSalaryHint: 'Najmanje što biste prihvatili',
+                monthlyHours: 'Mjesečni broj sati koje možete raditi *',
+                hours80: 'Do 80 sati (polu-radno)', hours120: 'Do 120 sati', hours160: 'Do 160 sati (puno radno)',
+                hours200: 'Do 200 sati (prekovremeno)', hours240: 'Do 240 sati (maksimalno)',
+                availability: 'Dostupnost *', availNow: 'Odmah (od danas)', avail1w: 'Za 1 tjedan',
+                avail2w: 'Za 2 tjedna', avail1m: 'Za 1 mjesec', availAgree: 'Po dogovoru',
+                notes: 'Dodatne napomene', notesPlaceholder: 'Npr. "Radim samo u Beču", "Imam svoj alat"...',
+                aiAnalysis: '🧠 AI analiza vašeg profila:', qualification: 'Kvalifikovanost',
+                aiRecDefault: 'Preporučujemo intervju. Kandidat ima dobro iskustvo.',
+                successTitle: '✅ Prijava uspješno poslana!',
+                successDesc: 'Vaša prijava je stigla. Naš AI sustav je analizirao vaš profil.',
+                nextSteps: 'Sljedeći koraci:', stepEmail: '📧 Poslat ćemo vam potvrdu na email',
+                stepInterview: '📅 Ako prođete AI filter, zakazat ćemo intervju u roku od 48h',
+                stepProfile: '📄 Vaš profil će biti dostupan klijentima',
+                newApp: 'Nova prijava',
+                headerSub: 'Prijava za rad preko naše agencije',
+                headerRequired: 'Sva polja sa * su obavezna'
+            },
+            bs: {
+                step1: 'Lični podaci', step2: 'Iskustvo', step3: 'Dokumenti', step4: 'Očekivanja', step5: 'Završetak',
+                step1Title: '📋 Lični podaci', step2Title: '🔧 Iskustvo i specijalnost', step3Title: '📎 Dokumenti', step4Title: '💰 Očekivanja',
+                fullName: 'Ime i prezime *', birthDate: 'Datum rođenja *', email: 'Email *', phone: 'Telefon *',
+                address: 'Adresa stanovanja *', country: 'Država porijekla', workCountry: 'Država u kojoj želite raditi *',
+                day: 'Dan', month: 'Mjesec', year: 'Godina', jan: 'Januar', feb: 'Februar', mar: 'Mart',
+                apr: 'April', may: 'Maj', jun: 'Juni', jul: 'Juli', aug: 'Avgust',
+                sep: 'Septembar', oct: 'Oktobar', nov: 'Novembar', dec: 'Decembar',
+                rs: 'Srbija', hr: 'Hrvatska', ba: 'Bosna i Hercegovina', mk: 'Sjeverna Makedonija', me: 'Crna Gora',
+                si: 'Slovenija', de: 'Njemačka', at: 'Austrija', es: 'Španija', other: 'Drugo', all: 'Sve (fleksibilan/na)',
+                choose: 'Odaberite...', next: 'Dalje', back: 'Nazad', submit: 'Pošalji prijavu',
+                specialty: 'Specijalnost *', experience: 'Godine iskustva *',
+                tiler: 'Keramičar', bricklayer: 'Zidar', drywall: 'Monter suhe gradnje', waterproofer: 'Hidroizolater',
+                fuger: 'Fuger', floorer: 'Podopolagač', fasader: 'Fasader', plumber: 'Vodoinstalater',
+                electrician: 'Električar', general: 'Opšti radnik',
+                exp0: '0-1 godina', exp2: '2-3 godine', exp4: '4-5 godina', exp6: '6-10 godina', exp10: '10+ godina',
+                certificates: 'Certifikati i dozvole (višestruki izbor)',
+                certHeight: 'Dozvola za rad na visini', certB: 'B kategorija (vozačka)', certC: 'C kategorija (vozačka)',
+                certA: 'Certifikat A (specijalistički)', certB2: 'Certifikat B (osnovni)', certLadder: 'Ljestve (rad na visini)',
+                recommendation: 'Radna preporuka (od prethodnog poslodavca)',
+                recPlaceholder: 'Napišite kratku preporuku ili kontakt osobe koja vas može preporučiti...',
+                experienceDesc: 'Kratak opis vašeg iskustva *',
+                expPlaceholder: 'Opišite vaše dosadašnje radno iskustvo, na kojim projektima ste radili...',
+                cv: 'CV / Radna biografija *', cvUpload: 'Kliknite ili prevucite CV (PDF, DOCX)',
+                photo: 'Fotografija (lična)', photoUpload: 'Kliknite ili prevucite fotografiju (JPG, PNG)',
+                certUpload: 'Certifikati i dozvole (PDF, slike)', certUploadText: 'Kliknite ili prevucite certifikate',
+                workPermit: 'Radna dozvola / Boravišna dozvola (ako postoji)',
+                permitUpload: 'Kliknite ili prevucite dozvolu',
+                noFile: 'Nije odabran fajl', maxSize: 'Maksimalna veličina: 10MB', multiFile: 'Možete odabrati više fajlova',
+                expectedSalary: 'Očekivana plata (bruto po satu) *', salaryHint: 'U evrima (€), bruto iznos',
+                minSalary: 'Minimalna plata (po satu)', minSalaryHint: 'Najmanje što biste prihvatili',
+                monthlyHours: 'Mjesečni broj sati koje možete raditi *',
+                hours80: 'Do 80 sati (polu-radno)', hours120: 'Do 120 sati', hours160: 'Do 160 sati (puno radno)',
+                hours200: 'Do 200 sati (prekovremeno)', hours240: 'Do 240 sati (maksimalno)',
+                availability: 'Dostupnost *', availNow: 'Odmah (od danas)', avail1w: 'Za 1 sedmicu',
+                avail2w: 'Za 2 sedmice', avail1m: 'Za 1 mjesec', availAgree: 'Po dogovoru',
+                notes: 'Dodatne napomene', notesPlaceholder: 'Npr. "Radim samo u Beču", "Imam svoj alat"...',
+                aiAnalysis: '🧠 AI analiza vašeg profila:', qualification: 'Kvalifikovanost',
+                aiRecDefault: 'Preporučujemo intervju. Kandidat ima dobro iskustvo.',
+                successTitle: '✅ Prijava uspješno poslata!',
+                successDesc: 'Vaša prijava je stigla. Naš AI sistem je analizirao vaš profil.',
+                nextSteps: 'Sljedeći koraci:', stepEmail: '📧 Poslat ćemo vam potvrdu na email',
+                stepInterview: '📅 Ako prođete AI filter, zakazat ćemo intervju u roku od 48h',
+                stepProfile: '📄 Vaš profil će biti dostupan klijentima',
+                newApp: 'Nova prijava',
+                headerSub: 'Prijava za rad preko naše agencije',
+                headerRequired: 'Sva polja sa * su obavezna'
+            },
+            mk: {
+                step1: 'Лични податоци', step2: 'Искуство', step3: 'Документи', step4: 'Очекувања', step5: 'Завршеток',
+                step1Title: '📋 Лични податоци', step2Title: '🔧 Искуство и специјалност', step3Title: '📎 Документи', step4Title: '💰 Очекувања',
+                fullName: 'Име и презиме *', birthDate: 'Датум на раѓање *', email: 'Е-пошта *', phone: 'Телефон *',
+                address: 'Адреса на живеење *', country: 'Држава на потекло', workCountry: 'Држава каде сакате да работите *',
+                day: 'Ден', month: 'Месец', year: 'Година', jan: 'Јануари', feb: 'Февруари', mar: 'Март',
+                apr: 'Април', may: 'Мај', jun: 'Јуни', jul: 'Јули', aug: 'Август',
+                sep: 'Септември', oct: 'Октомври', nov: 'Ноември', dec: 'Декември',
+                rs: 'Србија', hr: 'Хрватска', ba: 'Босна и Херцеговина', mk: 'Северна Македонија', me: 'Црна Гора',
+                si: 'Словенија', de: 'Германија', at: 'Австрија', es: 'Шпанија', other: 'Друго', all: 'Се (флексибилен/на)',
+                choose: 'Изберете...', next: 'Понатаму', back: 'Назад', submit: 'Испрати пријава',
+                specialty: 'Специјалност *', experience: 'Години искуство *',
+                tiler: 'Керамичар', bricklayer: 'Ѕидар', drywall: 'Монтер на сува градба', waterproofer: 'Хидроизолатер',
+                fuger: 'Фугер', floorer: 'Подополагач', fasader: 'Фасадер', plumber: 'Водоводџија',
+                electrician: 'Електричар', general: 'Општ работник',
+                exp0: '0-1 година', exp2: '2-3 години', exp4: '4-5 години', exp6: '6-10 години', exp10: '10+ години',
+                certificates: 'Сертификати и дозволи (повеќекратен избор)',
+                certHeight: 'Дозвола за работа на височина', certB: 'Б категорија (возачка)', certC: 'Ц категорија (возачка)',
+                certA: 'Сертификат А (специјалистички)', certB2: 'Сертификат Б (основен)', certLadder: 'Скали (работа на височина)',
+                recommendation: 'Работна препорака (од претходниот работодавач)',
+                recPlaceholder: 'Напишете кратка препорака или контакт на лице кое може да ве препорача...',
+                experienceDesc: 'Краток опис на вашето искуство *',
+                expPlaceholder: 'Опишете го вашето досегашно работно искуство, на кои проекти сте работеле...',
+                cv: 'ЦВ / Работна биографија *', cvUpload: 'Кликнете или влечете ЦВ (PDF, DOCX)',
+                photo: 'Фотографија (лична)', photoUpload: 'Кликнете или влечете фотографија (JPG, PNG)',
+                certUpload: 'Сертификати и дозволи (PDF, слики)', certUploadText: 'Кликнете или влечете сертификати',
+                workPermit: 'Работна дозвола / Боравишна дозвола (ако постои)',
+                permitUpload: 'Кликнете или влечете дозвола',
+                noFile: 'Не е одбран фајл', maxSize: 'Максимална големина: 10MB', multiFile: 'Можете да одберете повеќе фајлови',
+                expectedSalary: 'Очекувана плата (бруто по час) *', salaryHint: 'Во евра (€), бруто износ',
+                minSalary: 'Минимална плата (по час)', minSalaryHint: 'Најмалку што би прифатиле',
+                monthlyHours: 'Месечен број на часови што можете да работите *',
+                hours80: 'До 80 часа (полу-работно)', hours120: 'До 120 часа', hours160: 'До 160 часа (полно работно)',
+                hours200: 'До 200 часа (прекувремено)', hours240: 'До 240 часа (максимално)',
+                availability: 'Достапност *', availNow: 'Веднаш (од денес)', avail1w: 'За 1 недела',
+                avail2w: 'За 2 недели', avail1m: 'За 1 месец', availAgree: 'По договор',
+                notes: 'Дополнителни забелешки', notesPlaceholder: 'Пр. "Работам само во Беч", "Имам свој алат"...',
+                aiAnalysis: '🧠 АИ анализа на вашиот профил:', qualification: 'Квалификација',
+                aiRecDefault: 'Препорачуваме интервју. Кандидатот има добро искуство.',
+                successTitle: '✅ Пријава успешно испратена!',
+                successDesc: 'Вашата пријава е примена. Нашиот АИ систем го анализираше вашиот профил.',
+                nextSteps: 'Следни чекори:', stepEmail: '📧 Ќе ви испратиме потврда на е-пошта',
+                stepInterview: '📅 Ако поминете АИ филтер, ќе закажеме интервју во рок од 48ч',
+                stepProfile: '📄 Вашиот профил ќе биде достапен за клиентите',
+                newApp: 'Нова пријава',
+                headerSub: 'Пријава за работа преку нашата агенција',
+                headerRequired: 'Сите полиња со * се задолжителни'
+            },
+            de: {
+                step1: 'Persönliche Daten', step2: 'Erfahrung', step3: 'Dokumente', step4: 'Erwartungen', step5: 'Abschluss',
+                step1Title: '📋 Persönliche Daten', step2Title: '🔧 Erfahrung & Spezialisierung', step3Title: '📎 Dokumente', step4Title: '💰 Erwartungen',
+                fullName: 'Vor- und Nachname *', birthDate: 'Geburtsdatum *', email: 'E-Mail *', phone: 'Telefon *',
+                address: 'Wohnadresse *', country: 'Herkunftsland', workCountry: 'Land, in dem Sie arbeiten möchten *',
+                day: 'Tag', month: 'Monat', year: 'Jahr', jan: 'Januar', feb: 'Februar', mar: 'März',
+                apr: 'April', may: 'Mai', jun: 'Juni', jul: 'Juli', aug: 'August',
+                sep: 'September', oct: 'Oktober', nov: 'November', dec: 'Dezember',
+                rs: 'Serbien', hr: 'Kroatien', ba: 'Bosnien und Herzegowina', mk: 'Nordmazedonien', me: 'Montenegro',
+                si: 'Slowenien', de: 'Deutschland', at: 'Österreich', es: 'Spanien', other: 'Anderes', all: 'Alle (flexibel)',
+                choose: 'Wählen...', next: 'Weiter', back: 'Zurück', submit: 'Bewerbung senden',
+                specialty: 'Spezialisierung *', experience: 'Berufserfahrung *',
+                tiler: 'Fliesenleger', bricklayer: 'Maurer', drywall: 'Trockenbauer', waterproofer: 'Abdichter',
+                fuger: 'Fuger', floorer: 'Bodenleger', fasader: 'Fassadenbauer', plumber: 'Installateur',
+                electrician: 'Elektriker', general: 'Allgemeiner Arbeiter',
+                exp0: '0-1 Jahr', exp2: '2-3 Jahre', exp4: '4-5 Jahre', exp6: '6-10 Jahre', exp10: '10+ Jahre',
+                certificates: 'Zertifikate und Genehmigungen (Mehrfachauswahl)',
+                certHeight: 'Höhenarbeitserlaubnis', certB: 'Führerschein B', certC: 'Führerschein C',
+                certA: 'Zertifikat A (Spezialist)', certB2: 'Zertifikat B (Basis)', certLadder: 'Leiter (Höhenarbeit)',
+                recommendation: 'Arbeitsempfehlung (vom vorherigen Arbeitgeber)',
+                recPlaceholder: 'Schreiben Sie eine kurze Empfehlung oder Kontaktperson...',
+                experienceDesc: 'Kurze Beschreibung Ihrer Erfahrung *',
+                expPlaceholder: 'Beschreiben Sie Ihre bisherige Berufserfahrung, Projekte...',
+                cv: 'Lebenslauf *', cvUpload: 'Klicken oder ziehen Sie den Lebenslauf (PDF, DOCX)',
+                photo: 'Foto (persönlich)', photoUpload: 'Klicken oder ziehen Sie ein Foto (JPG, PNG)',
+                certUpload: 'Zertifikate und Genehmigungen (PDF, Bilder)', certUploadText: 'Klicken oder ziehen Sie Zertifikate',
+                workPermit: 'Arbeitserlaubnis / Aufenthaltserlaubnis (falls vorhanden)',
+                permitUpload: 'Klicken oder ziehen Sie die Genehmigung',
+                noFile: 'Keine Datei ausgewählt', maxSize: 'Maximale Größe: 10MB', multiFile: 'Mehrere Dateien möglich',
+                expectedSalary: 'Erwartetes Gehalt (Brutto/Stunde) *', salaryHint: 'In Euro (€), Bruttobetrag',
+                minSalary: 'Mindestgehalt (pro Stunde)', minSalaryHint: 'Das Mindeste, was Sie akzeptieren würden',
+                monthlyHours: 'Monatliche Arbeitsstunden *',
+                hours80: 'Bis 80 Stunden (Teilzeit)', hours120: 'Bis 120 Stunden', hours160: 'Bis 160 Stunden (Vollzeit)',
+                hours200: 'Bis 200 Stunden (Überstunden)', hours240: 'Bis 240 Stunden (Maximum)',
+                availability: 'Verfügbarkeit *', availNow: 'Sofort (ab heute)', avail1w: 'In 1 Woche',
+                avail2w: 'In 2 Wochen', avail1m: 'In 1 Monat', availAgree: 'Nach Vereinbarung',
+                notes: 'Zusätzliche Anmerkungen', notesPlaceholder: 'Z.B. "Arbeite nur in Wien", "Eigenes Werkzeug"...',
+                aiAnalysis: '🧠 KI-Analyse Ihres Profils:', qualification: 'Qualifikation',
+                aiRecDefault: 'Wir empfehlen ein Vorstellungsgespräch. Der Kandidat hat gute Erfahrung.',
+                successTitle: '✅ Bewerbung erfolgreich gesendet!',
+                successDesc: 'Ihre Bewerbung ist eingegangen. Unser KI-System hat Ihr Profil analysiert.',
+                nextSteps: 'Nächste Schritte:', stepEmail: '📧 Wir senden Ihnen eine Bestätigung per E-Mail',
+                stepInterview: '📅 Wenn Sie den KI-Filter bestehen, vereinbaren wir innerhalb von 48h ein Interview',
+                stepProfile: '📄 Ihr Profil wird für Kunden verfügbar sein',
+                newApp: 'Neue Bewerbung',
+                headerSub: 'Bewerbung für die Arbeit über unsere Agentur',
+                headerRequired: 'Alle Felder mit * sind Pflichtfelder'
+            },
+            en: {
+                step1: 'Personal Info', step2: 'Experience', step3: 'Documents', step4: 'Expectations', step5: 'Finish',
+                step1Title: '📋 Personal Information', step2Title: '🔧 Experience & Specialization', step3Title: '📎 Documents', step4Title: '💰 Expectations',
+                fullName: 'Full Name *', birthDate: 'Date of Birth *', email: 'Email *', phone: 'Phone *',
+                address: 'Residential Address *', country: 'Country of Origin', workCountry: 'Country where you want to work *',
+                day: 'Day', month: 'Month', year: 'Year', jan: 'January', feb: 'February', mar: 'March',
+                apr: 'April', may: 'May', jun: 'June', jul: 'July', aug: 'August',
+                sep: 'September', oct: 'October', nov: 'November', dec: 'December',
+                rs: 'Serbia', hr: 'Croatia', ba: 'Bosnia and Herzegovina', mk: 'North Macedonia', me: 'Montenegro',
+                si: 'Slovenia', de: 'Germany', at: 'Austria', es: 'Spain', other: 'Other', all: 'All (flexible)',
+                choose: 'Select...', next: 'Next', back: 'Back', submit: 'Submit Application',
+                specialty: 'Specialization *', experience: 'Years of Experience *',
+                tiler: 'Tiler', bricklayer: 'Bricklayer', drywall: 'Drywall Installer', waterproofer: 'Waterproofer',
+                fuger: 'Fuger', floorer: 'Floor Layer', fasader: 'Facade Worker', plumber: 'Plumber',
+                electrician: 'Electrician', general: 'General Worker',
+                exp0: '0-1 year', exp2: '2-3 years', exp4: '4-5 years', exp6: '6-10 years', exp10: '10+ years',
+                certificates: 'Certificates & Licenses (multiple choice)',
+                certHeight: 'Height Work Permit', certB: 'Driver License B', certC: 'Driver License C',
+                certA: 'Certificate A (Specialist)', certB2: 'Certificate B (Basic)', certLadder: 'Ladder (Height Work)',
+                recommendation: 'Work Recommendation (from previous employer)',
+                recPlaceholder: 'Write a short recommendation or contact person who can recommend you...',
+                experienceDesc: 'Brief description of your experience *',
+                expPlaceholder: 'Describe your previous work experience, projects you worked on...',
+                cv: 'CV / Resume *', cvUpload: 'Click or drag your CV (PDF, DOCX)',
+                photo: 'Photo (personal)', photoUpload: 'Click or drag a photo (JPG, PNG)',
+                certUpload: 'Certificates & Licenses (PDF, images)', certUploadText: 'Click or drag certificates',
+                workPermit: 'Work Permit / Residence Permit (if applicable)',
+                permitUpload: 'Click or drag your permit',
+                noFile: 'No file selected', maxSize: 'Maximum size: 10MB', multiFile: 'You can select multiple files',
+                expectedSalary: 'Expected salary (gross per hour) *', salaryHint: 'In Euros (€), gross amount',
+                minSalary: 'Minimum salary (per hour)', minSalaryHint: 'The minimum you would accept',
+                monthlyHours: 'Monthly hours you can work *',
+                hours80: 'Up to 80 hours (part-time)', hours120: 'Up to 120 hours', hours160: 'Up to 160 hours (full-time)',
+                hours200: 'Up to 200 hours (overtime)', hours240: 'Up to 240 hours (maximum)',
+                availability: 'Availability *', availNow: 'Immediately (from today)', avail1w: 'In 1 week',
+                avail2w: 'In 2 weeks', avail1m: 'In 1 month', availAgree: 'By agreement',
+                notes: 'Additional notes', notesPlaceholder: 'E.g. "Work only in Vienna", "Have my own tools"...',
+                aiAnalysis: '🧠 AI analysis of your profile:', qualification: 'Qualification',
+                aiRecDefault: 'We recommend an interview. The candidate has good experience.',
+                successTitle: '✅ Application successfully submitted!',
+                successDesc: 'Your application has been received. Our AI system has analyzed your profile.',
+                nextSteps: 'Next steps:', stepEmail: '📧 We will send you a confirmation email',
+                stepInterview: '📅 If you pass the AI filter, we will schedule an interview within 48h',
+                stepProfile: '📄 Your profile will be available to clients',
+                newApp: 'New Application',
+                headerSub: 'Application for work through our agency',
+                headerRequired: 'All fields with * are required'
+            },
+            es: {
+                step1: 'Datos personales', step2: 'Experiencia', step3: 'Documentos', step4: 'Expectativas', step5: 'Finalizar',
+                step1Title: '📋 Datos personales', step2Title: '🔧 Experiencia y especialización', step3Title: '📎 Documentos', step4Title: '💰 Expectativas',
+                fullName: 'Nombre y apellidos *', birthDate: 'Fecha de nacimiento *', email: 'Correo electrónico *', phone: 'Teléfono *',
+                address: 'Dirección de residencia *', country: 'País de origen', workCountry: 'País donde desea trabajar *',
+                day: 'Día', month: 'Mes', year: 'Año', jan: 'Enero', feb: 'Febrero', mar: 'Marzo',
+                apr: 'Abril', may: 'Mayo', jun: 'Junio', jul: 'Julio', aug: 'Agosto',
+                sep: 'Septiembre', oct: 'Octubre', nov: 'Noviembre', dec: 'Diciembre',
+                rs: 'Serbia', hr: 'Croacia', ba: 'Bosnia y Herzegovina', mk: 'Macedonia del Norte', me: 'Montenegro',
+                si: 'Eslovenia', de: 'Alemania', at: 'Austria', es: 'España', other: 'Otro', all: 'Todos (flexible)',
+                choose: 'Seleccione...', next: 'Siguiente', back: 'Atrás', submit: 'Enviar solicitud',
+                specialty: 'Especialización *', experience: 'Años de experiencia *',
+                tiler: 'Colocador de azulejos', bricklayer: 'Albañil', drywall: 'Instalador de tabiquería seca', waterproofer: 'Impermeabilizador',
+                fuger: 'Fugador', floorer: 'Colocador de suelos', fasader: 'Fachadista', plumber: 'Fontanero',
+                electrician: 'Electricista', general: 'Trabajador general',
+                exp0: '0-1 año', exp2: '2-3 años', exp4: '4-5 años', exp6: '6-10 años', exp10: '10+ años',
+                certificates: 'Certificados y licencias (selección múltiple)',
+                certHeight: 'Permiso para trabajo en altura', certB: 'Carnet de conducir B', certC: 'Carnet de conducir C',
+                certA: 'Certificado A (Especialista)', certB2: 'Certificado B (Básico)', certLadder: 'Escaleras (trabajo en altura)',
+                recommendation: 'Recomendación laboral (de empleador anterior)',
+                recPlaceholder: 'Escriba una breve recomendación o persona de contacto...',
+                experienceDesc: 'Breve descripción de su experiencia *',
+                expPlaceholder: 'Describa su experiencia laboral previa, proyectos en los que trabajó...',
+                cv: 'CV / Currículum *', cvUpload: 'Haga clic o arrastre su CV (PDF, DOCX)',
+                photo: 'Foto (personal)', photoUpload: 'Haga clic o arrastre una foto (JPG, PNG)',
+                certUpload: 'Certificados y licencias (PDF, imágenes)', certUploadText: 'Haga clic o arrastre certificados',
+                workPermit: 'Permiso de trabajo / Residencia (si corresponde)',
+                permitUpload: 'Haga clic o arrastre su permiso',
+                noFile: 'No se ha seleccionado ningún archivo', maxSize: 'Tamaño máximo: 10MB', multiFile: 'Puede seleccionar varios archivos',
+                expectedSalary: 'Salario esperado (bruto por hora) *', salaryHint: 'En euros (€), importe bruto',
+                minSalary: 'Salario mínimo (por hora)', minSalaryHint: 'El mínimo que aceptaría',
+                monthlyHours: 'Horas mensuales que puede trabajar *',
+                hours80: 'Hasta 80 horas (media jornada)', hours120: 'Hasta 120 horas', hours160: 'Hasta 160 horas (jornada completa)',
+                hours200: 'Hasta 200 horas (horas extra)', hours240: 'Hasta 240 horas (máximo)',
+                availability: 'Disponibilidad *', availNow: 'Inmediatamente (desde hoy)', avail1w: 'En 1 semana',
+                avail2w: 'En 2 semanas', avail1m: 'En 1 mes', availAgree: 'Por acuerdo',
+                notes: 'Notas adicionales', notesPlaceholder: 'Ej. "Trabajo solo en Viena", "Tengo mis propias herramientas"...',
+                aiAnalysis: '🧠 Análisis de IA de su perfil:', qualification: 'Calificación',
+                aiRecDefault: 'Recomendamos una entrevista. El candidato tiene buena experiencia.',
+                successTitle: '✅ ¡Solicitud enviada con éxito!',
+                successDesc: 'Su solicitud ha sido recibida. Nuestro sistema de IA ha analizado su perfil.',
+                nextSteps: 'Próximos pasos:', stepEmail: '📧 Le enviaremos un correo de confirmación',
+                stepInterview: '📅 Si pasa el filtro de IA, concertaremos una entrevista en 48h',
+                stepProfile: '📄 Su perfil estará disponible para los clientes',
+                newApp: 'Nueva solicitud',
+                headerSub: 'Solicitud de trabajo a través de nuestra agencia',
+                headerRequired: 'Todos los campos con * son obligatorios'
+            }
+        };
+
+        // ==================== JEZIČKA LOGIKA ====================
+        let currentLang = 'sr';
+
+        function setLanguage(lang) {
+            if (!translations[lang]) return;
+            currentLang = lang;
+            const t = translations[lang];
+
+            // Prevod svih elemenata sa data-i18n
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.dataset.i18n;
+                if (t[key] !== undefined) {
+                    el.textContent = t[key];
+                }
+            });
+
+            // Placeholder prevod
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.dataset.i18nPlaceholder;
+                if (t[key] !== undefined) {
+                    el.placeholder = t[key];
+                }
+            });
+
+            // Aktivni jezički dugmić
+            document.querySelectorAll('.lang-selector button').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+
+            // Osveži AI analizu
+            updateAIScore();
+        }
+
+        document.querySelectorAll('.lang-selector button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                setLanguage(this.dataset.lang);
+            });
+        });
+
+        // ==================== OSTALE FUNKCIJE ====================
+        let currentStep = 1;
+        const totalSteps = 5;
+
+        function nextStep(step) {
+            if (!validateStep(currentStep)) {
+                alert('❌ ' + (translations[currentLang].choose || 'Molimo popunite sva obavezna polja.'));
+                return;
+            }
+            goToStep(step);
+        }
+
+        function prevStep(step) {
+            goToStep(step);
+        }
+
+        function goToStep(step) {
+            if (step < 1 || step > totalSteps) return;
+            
+            document.querySelectorAll('.form-step').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.step').forEach(el => el.classList.remove('active', 'done'));
+            
+            document.querySelector(`.form-step[data-step="${step}"]`).classList.add('active');
+            
+            for (let i = 1; i <= totalSteps; i++) {
+                const stepEl = document.querySelector(`.step[data-step="${i}"]`);
+                if (i < step) {
+                    stepEl.classList.add('done');
+                } else if (i === step) {
+                    stepEl.classList.add('active');
+                }
+            }
+            
+            currentStep = step;
+            
+            if (step === 4) {
+                updateAIScore();
+            }
+        }
+
+        function validateStep(step) {
+            const stepElements = document.querySelectorAll(`.form-step[data-step="${step}"] input[required], .form-step[data-step="${step}"] select[required], .form-step[data-step="${step}"] textarea[required]`);
+            
+            let valid = true;
+            stepElements.forEach(el => {
+                if (!el.value || el.value === '') {
+                    el.style.borderColor = '#f44336';
+                    valid = false;
+                } else {
+                    el.style.borderColor = '#333';
+                }
+            });
+            
+            // Posebna validacija za datum
+            if (step === 1) {
+                const day = document.getElementById('birthDay').value;
+                const month = document.getElementById('birthMonth').value;
+                const year = document.getElementById('birthYear').value;
+                if (!day || !month || !year) {
+                    document.getElementById('birthDay').style.borderColor = '#f44336';
+                    document.getElementById('birthMonth').style.borderColor = '#f44336';
+                    document.getElementById('birthYear').style.borderColor = '#f44336';
+                    valid = false;
+                }
+            }
+            
+            return valid;
+        }
+
+        function handleFileUpload(inputId, displayId) {
+            const input = document.getElementById(inputId);
+            const display = document.getElementById(displayId);
+            
+            if (input.files.length > 0) {
+                if (inputId === 'certFile') {
+                    const names = Array.from(input.files).map(f => f.name).join(', ');
+                    display.textContent = names.length > 50 ? names.substring(0, 50) + '...' : names;
+                } else {
+                    display.textContent = input.files[0].name;
+                }
+                uploadedFiles[inputId] = input.files;
+            } else {
+                display.textContent = translations[currentLang].noFile || 'Nije odabran fajl';
+            }
+        }
+
+        // ==================== AI ANALIZA ====================
+        function updateAIScore() {
+            const specialty = document.getElementById('specialty').value;
+            const experience = document.getElementById('experience').value;
+            const certs = document.querySelectorAll('#specialty + .grid-2 input[type="checkbox"]:checked');
+            
+            let score = 50;
+            let recommendation = '';
+            
+            const t = translations[currentLang];
+            
+            // Specijalnost
+            if (specialty === 'keramicar') score += 15;
+            else if (specialty === 'zidar') score += 12;
+            else if (specialty === 'monter_suhe_gradnje') score += 10;
+            else if (specialty === 'opsti_radnik') score += 5;
+            else score += 8;
+            
+            // Iskustvo
+            if (experience === '10+') score += 20;
+            else if (experience === '6-10') score += 15;
+            else if (experience === '4-5') score += 10;
+            else if (experience === '2-3') score += 5;
+            else score += 2;
+            
+            // Sertifikati
+            if (certs.length >= 3) score += 10;
+            else if (certs.length >= 2) score += 6;
+            else if (certs.length >= 1) score += 3;
+            
+            if (score > 95) score = 95;
+            
+            // Preporuka na osnovu jezika
+            if (score >= 80) {
+                recommendation = currentLang === 'sr' ? '🏆 Odličan kandidat! Preporučujemo hitan intervju.' :
+                               currentLang === 'en' ? '🏆 Excellent candidate! We recommend an immediate interview.' :
+                               currentLang === 'es' ? '🏆 ¡Excelente candidato! Recomendamos una entrevista inmediata.' :
+                               '🏆 Ausgezeichneter Kandidat! Wir empfehlen ein sofortiges Vorstellungsgespräch.';
+            } else if (score >= 65) {
+                recommendation = currentLang === 'sr' ? '✅ Dobar kandidat. Preporučujemo intervju.' :
+                               currentLang === 'en' ? '✅ Good candidate. We recommend an interview.' :
+                               currentLang === 'es' ? '✅ Buen candidato. Recomendamos una entrevista.' :
+                               '✅ Guter Kandidat. Wir empfehlen ein Vorstellungsgespräch.';
+            } else if (score >= 50) {
+                recommendation = currentLang === 'sr' ? 'ℹ️ Osrednji kandidat. Vredi razmotriti za jednostavnije poslove.' :
+                               currentLang === 'en' ? 'ℹ️ Average candidate. Worth considering for simpler tasks.' :
+                               currentLang === 'es' ? 'ℹ️ Candidato promedio. Vale la pena considerarlo para tareas más simples.' :
+                               'ℹ️ Durchschnittlicher Kandidat. Für einfachere Aufgaben zu empfehlen.';
+            } else {
+                recommendation = currentLang === 'sr' ? '⚠️ Kandidat ima malo iskustva. Preporučujemo obuku.' :
+                               currentLang === 'en' ? '⚠️ Candidate has limited experience. We recommend training.' :
+                               currentLang === 'es' ? '⚠️ El candidato tiene poca experiencia. Recomendamos formación.' :
+                               '⚠️ Der Kandidat hat wenig Erfahrung. Wir empfehlen eine Schulung.';
+            }
+            
+            document.getElementById('aiScoreNumber').textContent = score + '%';
+            document.getElementById('aiRecommendation').textContent = recommendation;
+        }
+
+        // ==================== SUBMIT ====================
+        function submitForm(e) {
+            e.preventDefault();
+            
+            for (let i = 1; i <= 4; i++) {
+                if (!validateStep(i)) {
+                    goToStep(i);
+                    alert('❌ ' + (translations[currentLang].choose || 'Molimo popunite sva obavezna polja.'));
+                    return false;
+                }
+            }
+            
+            // Prikupljanje podataka
+            const formData = {
+                personal: {
+                    name: document.getElementById('fullName').value,
+                    birthDay: document.getElementById('birthDay').value,
+                    birthMonth: document.getElementById('birthMonth').value,
+                    birthYear: document.getElementById('birthYear').value,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value,
+                    address: document.getElementById('address').value,
+                    country: document.getElementById('country').value,
+                    workCountry: document.getElementById('workCountry').value
+                },
+                experience: {
+                    specialty: document.getElementById('specialty').value,
+                    years: document.getElementById('experience').value,
+                    certificates: Array.from(document.querySelectorAll('#specialty + .grid-2 input[type="checkbox"]:checked')).map(cb => cb.value),
+                    recommendation: document.getElementById('recommendation').value,
+                    description: document.getElementById('experienceDesc').value
+                },
+                documents: {
+                    cv: document.getElementById('cvFile').files.length > 0 ? document.getElementById('cvFile').files[0].name : null,
+                    photo: document.getElementById('photoFile').files.length > 0 ? document.getElementById('photoFile').files[0].name : null,
+                    certificates: document.getElementById('certFile').files.length > 0 ? Array.from(document.getElementById('certFile').files).map(f => f.name) : [],
+                    workPermit: document.getElementById('workPermitFile').files.length > 0 ? document.getElementById('workPermitFile').files[0].name : null
+                },
+                expectations: {
+                    expectedSalary: document.getElementById('expectedSalary').value,
+                    minSalary: document.getElementById('minSalary').value,
+                    monthlyHours: document.getElementById('monthlyHours').value,
+                    availability: document.getElementById('availability').value,
+                    notes: document.getElementById('notes').value
+                },
+                language: currentLang
+            };
+            
+            console.log('📋 PRIJAVA POSLATA:', formData);
+            
+            // Pređi na success korak
+            goToStep(5);
+            
+            return false;
+        }
+
+        function resetForm() {
+            document.getElementById('workerForm').reset();
+            document.querySelectorAll('.file-name').forEach(el => {
+                el.textContent = translations[currentLang].noFile || 'Nije odabran fajl';
+            });
+            goToStep(1);
+        }
+
+        // ==================== AUTOMATSKO RAČUNANJE GODINA ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            const daySelect = document.getElementById('birthDay');
+            const monthSelect = document.getElementById('birthMonth');
+            const yearSelect = document.getElementById('birthYear');
+            const ageHint = document.getElementById('ageHint');
+
+            function updateAge() {
+                const day = parseInt(daySelect.value);
+                const month = parseInt(monthSelect.value);
+                const year = parseInt(yearSelect.value);
+
+                if (day && month && year) {
+                    const birthDate = new Date(year, month - 1, day);
+                    const today = new Date();
+                    let age = today.getFullYear() - birthDate.getFullYear();
+                    const m = today.getMonth() - birthDate.getMonth();
+                    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                        age--;
+                    }
+                    
+                    const lang = currentLang;
+                    let ageText = lang === 'sr' ? 'godina' : lang === 'en' ? 'years' : lang === 'es' ? 'años' : 'Jahre';
+                    ageHint.innerHTML = `🎂 <strong style="color:#c87a2b;">${age} ${ageText}</strong>`;
+                    
+                    if (age < 18) {
+                        ageHint.innerHTML += ` ⚠️ <span style="color:#f44336;">${lang === 'sr' ? 'Premladi ste (min 18 god.)' : lang === 'en' ? 'Too young (min 18)' : lang === 'es' ? 'Demasiado joven (mín 18)' : 'Zu jung (min. 18)'}</span>`;
+                    } else if (age > 67) {
+                        ageHint.innerHTML += ` ⚠️ <span style="color:#ffc107;">${lang === 'sr' ? 'Preporučujemo konsultaciju' : lang === 'en' ? 'Consultation recommended' : lang === 'es' ? 'Se recomienda consulta' : 'Konsultation empfohlen'}</span>`;
+                    } else {
+                        ageHint.innerHTML += ` ✅ <span style="color:#4caf50;">${lang === 'sr' ? 'Odgovarajuće godine' : lang === 'en' ? 'Suitable age' : lang === 'es' ? 'Edad adecuada' : 'Geeignetes Alter'}</span>`;
+                    }
+                } else {
+                    ageHint.innerHTML = '🔹 ' + (currentLang === 'sr' ? 'Izaberite dan, mesec i godinu' : currentLang === 'en' ? 'Select day, month and year' : currentLang === 'es' ? 'Seleccione día, mes y año' : 'Wählen Sie Tag, Monat und Jahr');
+                }
+            }
+
+            daySelect.addEventListener('change', updateAge);
+            monthSelect.addEventListener('change', updateAge);
+            yearSelect.addEventListener('change', updateAge);
+
+            // Postavi default jezik
+            setLanguage('sr');
+        });
+    </script>
+</body>
+</html>
