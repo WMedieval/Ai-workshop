@@ -455,6 +455,90 @@ tr:hover td {
     margin-top: 10px;
 }
 
+/* Worker form */
+.worker-form {
+    background: #121212;
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid #2a2a2a;
+    margin-bottom: 20px;
+}
+.worker-form .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.worker-form .form-row label {
+    min-width: 120px;
+    color: #aaa;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+}
+.worker-form .form-row input,
+.worker-form .form-row select {
+    flex: 1;
+    min-width: 180px;
+    padding: 10px 14px;
+    border-radius: 30px;
+    border: 1px solid #333;
+    background: #0a0a0a;
+    color: #e0e0e0;
+    font-size: 14px;
+    outline: none;
+}
+.worker-form .form-row input:focus,
+.worker-form .form-row select:focus {
+    border-color: #c87a2b;
+}
+.worker-form .form-row input[type="file"] {
+    background: transparent;
+    border: 1px dashed #c87a2b;
+    color: #aaa;
+    padding: 12px;
+}
+.worker-form .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+}
+.worker-form .checkbox-row input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #c87a2b;
+}
+
+.alert-badge {
+    background: #dc3545;
+    color: white;
+    padding: 0.2rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    animation: pulse 1.5s infinite;
+}
+
+.hitne-tag {
+    display: inline-block;
+    background: #2a1a1a;
+    color: #ff8a80;
+    padding: 2px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    margin-left: 6px;
+    border: 1px solid #f4433655;
+}
+
+.badge-count {
+    background: #dc3545;
+    color: white;
+    border-radius: 50%;
+    padding: 1px 8px;
+    font-size: 11px;
+    margin-left: 4px;
+}
+
 /* Responsive */
 @media (max-width: 700px) {
     .header {
@@ -467,5 +551,16 @@ tr:hover td {
     }
     .card-value {
         font-size: 28px;
+    }
+    .worker-form .form-row {
+        flex-direction: column;
+    }
+    .worker-form .form-row label {
+        min-width: auto;
+    }
+    .worker-form .form-row input,
+    .worker-form .form-row select {
+        min-width: auto;
+        width: 100%;
     }
 }
