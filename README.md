@@ -1,2 +1,2 @@
-# Ai-workshop
-Ai app dev
+# BAUMIND AI APP
+APP FOR CONSTRUCTION BUSINESS
