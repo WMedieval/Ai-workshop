@@ -1,0 +1,12 @@
+{
+  "radnici": [],
+  "hitneStruke": ["zidar", "elektricar", "keramicar"],
+  "alerti": [],
+  "statistika": {
+    "ukupnoPrijava": 0,
+    "zadnjaPrijava": null,
+    "poStrukama": {},
+    "prosecneGodine": 0,
+    "hitnihPrijava": 0
+  }
+}
