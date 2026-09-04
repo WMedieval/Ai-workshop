@@ -1,0 +1,43 @@
+Kako konkretno od index.html na vašem računaru doći do toga da aplikacija radi na Internetu? Korak po korak.
+
+📁 Prvi korak: Pravimo mesto za kod na GitHub-u (Repozitorijum)
+
+1. Prijavite se na GitHub.com.
+2. Kliknite na zeleno dugme "New" ili na znak + u gornjem desnom uglu pa izaberite "New repository".
+3. Dajte mu ime (npr. bau-mind-ai).
+4. Ne morate da dodajete README fajl, jer već imate svoje fajlove.
+5. Kliknite na "Create repository".
+
+💻 Drugi korak: Postavljamo kod na GitHub (Upload)
+
+Najlakši način (bez komandne linije):
+
+1. Na stranici vašeg novog repozitorijuma, kliknite na dugme "Upload files".
+2. Prevucite sve fajlove koje ste dobili od mene (index.html, style.css, email_parser.py ... i sve ostale) u prozor pretraživača.
+3. Na dnu stranice napišite kratku poruku o izmenama (npr. "Prva verzija aplikacije") i kliknite na "Commit changes".
+
+Čestitamo! Vaš kod je sada na GitHub-u.
+
+☁️ Treći korak: Povezujemo GitHub sa Render-om (Da aplikacija zaživi)
+
+1. Napravite nalog na Render.com (besplatno).
+2. Na Render dashboard-u kliknite na "New +" pa izaberite "Web Service".
+3. Povežite svoj GitHub nalog sa Render-om (daće vam uputstva, to je par klikova).
+4. Izaberite repozitorijum koji ste upravo napravili (bau-mind-ai).
+5. Render će sam otkriti da je u pitanju Python projekat. Ono što je najvažnije su Build i Start komande:
+   · Build Command: pip install -r requirements.txt (Ovo instalira sve potrebne biblioteke za Python).
+   · Start Command: Ovde, trenutno, možete ostaviti nešto jednostavno da vidite da li sve radi, npr. echo "Aplikacija je spremna!" (kasnije ćemo ovo zameniti sa python email_parser.py ili slično).
+6. Kliknite na "Create Web Service".
+
+Za nekoliko minuta, Render će izgraditi vaš projekat. Dobićete javnu adresu (npr. https://vas-projekat.onrender.com). Kada otvorite tu adresu u pretraživaču, videćete index.html i sve funkcionalnosti koje ste do sada testirali lokalno.
+
+---
+
+🛡️ Šta je najvažnije zapamtiti?
+
+1. Nikad ne postavljajte tajne (ključeve, lozinke) na GitHub. GitHub je javan (osim ako ne platite privatni repozitorijum), pa bi svako mogao da vidi vaše API ključeve. Zato se koriste Environment Variables (koje se postavljaju na Render-u, a ne u kodu).
+2. GitHub Pages ne radi za Python. To je servis samo za statičke veb-sajtove (HTML, CSS, JS). Pošto vaša aplikacija ima Python backend, morate da koristite Render (ili sličan servis kao što su PythonAnywhere, Heroku). Ovaj korak smo upravo uradili.
+
+---
+
+Ovo je osnovni put. Pošto ćemo nastaviti sutra, razmislimo i o bržoj opciji: Netlify je još jednostavniji za statički deo (HTML/CSS/JS), ali ne podržava Python. Za početak, Render je odličan izbor jer podržava i HTML i Python.
