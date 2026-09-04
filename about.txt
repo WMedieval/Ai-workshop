@@ -1,0 +1,94 @@
+🏗️ BauMind AI – Opis Aplikacije
+
+---
+
+📌 Kratak opis (za sajt, LinkedIn, prezentaciju)
+
+BauMind AI je prvi potpuno automatizovani AI asistent za građevinske firme na prostoru Nemačke, Austrije i Ex-Yu.
+
+Zamišljen je kao vaš lični digitalni direktor – radi 24/7, analizira sve poslovne procese, štedi vam sate svakodnevnog administrativnog rada i direktno povećava profitabilnost vaše firme.
+
+BauMind AI vam pomaže da:
+
+· 📧 Automatski čitate i analizirate emailove – AI izvlači ključne podatke (iznose, rokove, projekte) i predlaže odgovore.
+· 📄 Kreirate profesionalne ponude za 3 sekunde – samo unesite površinu, AI izračunava troškove, maržu i generiše PDF.
+· 👷 Imate potpuni pregled nad radnicima – znate ko je gde, ko je slobodan, ko ima sertifikate.
+· 📊 Analizirate tržište u realnom vremenu – AI skenira tender-e, cene materijala i konkurenciju.
+· 📅 Povezujete se sa Google Kalendarom – svi rokovi i sastanci su automatski organizovani.
+· 🗣️ Komandujete glasom – na srpskom, hrvatskom, bosanskom, makedonskom ili nemačkom.
+· 📈 Dobijate dnevne i sedmične izveštaje – svako jutro u 7:00 stiže vam pregled prioriteta, finansija i prilika.
+
+Cilj: Da vlasnik građevinske firme uštedi 5-10 sati nedeljno, poveća maržu za 3-5% i udvostruči broj ponuda – bez dodatnog zapošljavanja.
+
+---
+
+🎯 Glavne funkcionalnosti (za klijente)
+
+Funkcija Opis
+AI analiza emailova Automatsko čitanje, kategorizacija, izvlačenje podataka i generisanje odgovora
+Automatske ponude Generisanje PDF ponuda za 3 sekunde na osnovu kvadrature i tipa posla
+Upravljanje radnicima Praćenje rasporeda, sertifikata, bolovanja i slobodnih kapaciteta
+Analiza tržišta Skeniranje tender-a, cena materijala i konkurencije (sedmični izveštaji)
+Google Calendar Automatsko zakazivanje rokova, sastanaka i podsetnika
+Glasovne komande Upravljanje aplikacijom glasom – hands-free na gradilištu
+Dnevni izveštaji Jutarnji briefing sa prioritetima, finansijama i preporukama
+Višejezička podrška Srpski, hrvatski, bosanski, makedonski, nemački
+Prediktivna analitika Prognoze troškova, prihoda i marže za narednih 30 dana
+Samoučenje AI uči iz vaših navika i daje sve bolje preporuke
+
+---
+
+💡 Koji problem rešavamo?
+
+Građevinske firme u Nemačkoj, Austriji i Ex-Yu suočavaju se sa istim izazovima:
+
+· ❌ Gube 22% profita zbog lošeg planiranja
+· ❌ Troše sate na administrativni rad (emailovi, ponude, izveštaji)
+· ❌ Nemaju pregled nad projektima i radnicima
+· ❌ Propuštaju poslovne prilike jer nemaju vremena za istraživanje tržišta
+· ❌ Skupi softveri (Procore) su preskupi i komplikovani za male/srednje firme
+
+BauMind AI rešava sve ove probleme – jednostavno, brzo i pristupačno.
+
+---
+
+🎁 Paketi pretplate
+
+Paket Cena Ključne funkcije
+INSPIRE €199/mesec Dnevni izveštaji, analiza projekata, osnovne glasovne komande, 3 projekta
+DOMINATE 🏆 €499/mesec Sve iz INSPIRE + email analiza, automatske ponude, foto analiza, 50 radnika, pravni saveti
+LEGEND €999/mesec Sve iz DOMINATE + prediktivna analitika, lead generation, neograničeno, dedicated AI
+
+🎁 Besplatna proba – 14 dana, bez obaveza!
+
+---
+
+🌍 Za koga je aplikacija?
+
+· 🏗️ Građevinske firme (keramika, zidarski radovi, hidroizolacija, završni radovi)
+· 📐 Projektni menadžeri koji žele bolju organizaciju
+· 👷 Vlasnici malih i srednjih firmi koji žele da uštede vreme i povećaju profit
+· 📦 Špedicija i uvoznici materijala (proširenje u planu)
+
+---
+
+📧 Kontakt
+
+Sinisa Stantic
+📧 sinisa.stantic@gmail.com
+🌐 www.baumind.ai (u pripremi)
+📍 Nemačka / Austrija / Ex-Yu
+
+---
+
+🔥 Kratki slogan
+
+"BauMind AI – Vaš digitalni direktor za gradjevinu."
+
+"Automatizujte, optimizujte, dominirajte."
+
+"Štedi vreme, novac i donosi bolje odluke."
+
+---
+
+Napomena: Aplikacija je u demo fazi. Prvi korisnici dobijaju 14 dana besplatne probe i popust od 20% na prvu godinu pretplate.
