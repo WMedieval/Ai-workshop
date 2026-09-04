@@ -13,7 +13,6 @@ import os
 from datetime import datetime
 
 # ==================== KONFIGURACIJA ====================
-# Ove podatke ćete uneti u config.json ili kao environment varijable
 EMAIL_HOST = os.getenv("EMAIL_HOST", "imap.gmail.com")
 EMAIL_USER = os.getenv("EMAIL_USER", "your_email@gmail.com")
 EMAIL_PASS = os.getenv("EMAIL_PASS", "your_app_password")
@@ -21,12 +20,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "your_openai_key")
 
 openai.api_key = OPENAI_API_KEY
 
-# ==================== FUNKCIJE ====================
-
 def connect_to_email():
-    """
-    Povezivanje na email server preko IMAP-a.
-    """
     try:
         mail = imaplib.IMAP4_SSL(EMAIL_HOST)
         mail.login(EMAIL_USER, EMAIL_PASS)
@@ -37,9 +31,6 @@ def connect_to_email():
         return None
 
 def fetch_unread_emails(mail, limit=10):
-    """
-    Preuzima nepročitane emailove.
-    """
     try:
         status, messages = mail.search(None, "UNSEEN")
         if status != "OK":
@@ -56,7 +47,6 @@ def fetch_unread_emails(mail, limit=10):
             raw_email = msg_data[0][1]
             msg = email.message_from_bytes(raw_email)
             
-            # Dekodiranje naslova i pošiljaoca
             subject = decode_header(msg["Subject"])[0][0]
             if isinstance(subject, bytes):
                 subject = subject.decode("utf-8", errors="ignore")
@@ -65,7 +55,6 @@ def fetch_unread_emails(mail, limit=10):
             if isinstance(from_, bytes):
                 from_ = from_.decode("utf-8", errors="ignore")
                 
-            # Telo emaila
             body = ""
             if msg.is_multipart():
                 for part in msg.walk():
@@ -81,13 +70,13 @@ def fetch_unread_emails(mail, limit=10):
                 try:
                     body = msg.get_payload(decode=True).decode("utf-8", errors="ignore")
                 except:
-                    body = str(msg.get_payload())
+                    body = str(msg.get_payload()))
             
             emails.append({
                 "id": e_id.decode(),
                 "from": from_,
                 "subject": subject,
-                "body": body[:1000],  # Ograđivanje radi performansi
+                "body": body[:1000],
                 "date": msg.get("Date")
             })
             
@@ -97,9 +86,6 @@ def fetch_unread_emails(mail, limit=10):
         return []
 
 def analyze_email_with_ai(email_content):
-    """
-    Šalje email ChatGPT-u na analizu.
-    """
     try:
         prompt = f"""
         Analiziraj sledeći email i izvuci ključne informacije:
@@ -130,7 +116,6 @@ def analyze_email_with_ai(email_content):
         )
         
         result = response.choices[0].message.content
-        # Čistimo JSON iz odgovora
         result = result.replace("```json", "").replace("```", "").strip()
         return json.loads(result)
         
@@ -147,9 +132,6 @@ def analyze_email_with_ai(email_content):
         }
 
 def process_emails():
-    """
-    Glavna funkcija – čita emailove, analizira ih i vraća rezultate.
-    """
     mail = connect_to_email()
     if not mail:
         return []
@@ -168,7 +150,6 @@ def process_emails():
     
     return results
 
-# ==================== POKRETANJE ====================
 if __name__ == "__main__":
     print("📬 BauMind AI – Email Parser")
     print("=" * 40)
