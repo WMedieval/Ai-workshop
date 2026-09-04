@@ -1,0 +1,18 @@
+baumind-app/
+│
+├── 📄 index.html                    # Glavna aplikacija (dashboard + sve funkcije)
+├── 📄 worker-app.html               # Samo forma za radnike (besplatna prijava)
+├── 📄 style.css                     # Glavni stilovi
+├── 📄 script.js                     # Glavna JavaScript logika
+│
+├── 📄 email_parser.py               # Python backend – analiza emailova
+├── 📄 google_calendar.py            # Python backend – Google Calendar
+├── 📄 market_scraper.py             # Python backend – skener tržišta
+├── 📄 requirements.txt              # Python zavisnosti
+│
+├── 📄 .env.example                  # Primer environment varijabli
+├── 📄 deploy_instructions.md        # Detaljno uputstvo za deploy
+├── 📄 step_by_step_install.txt      # Korak po korak instalacija
+│
+└── 📁 data/
+    └── 📄 radnici.json              # Baza radnika (simulacija)
