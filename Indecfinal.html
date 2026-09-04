@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏗️ BauMind AI – Kompletna verzija</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="container">
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="logo"><i class="fas fa-helmet-safety"></i><span>BauMind AI</span></div>
+        <div class="header-right">
+            <div class="lang-selector">
+                <button class="active" data-lang="sr">SR</button>
+                <button data-lang="hr">HR</button>
+                <button data-lang="bs">BS</button>
+                <button data-lang="mk">MK</button>
+                <button data-lang="de">DE</button>
+            </div>
+            <span class="badge"><i class="fas fa-microphone"></i> <span data-i18n="voiceBadge">Glasovne naredbe</span></span>
+            <button class="btn" onclick="sendDemoRequest()"><i class="fas fa-paper-plane"></i> <span data-i18n="sendDemo">Pošalji demo</span></button>
+        </div>
+    </header>
+
+    <!-- NAVIGACIJA -->
+    <div class="nav-tabs">
+        <button class="active" data-tab="dashboard"><i class="fas fa-chart-pie"></i> <span data-i18n="navDashboard">Dashboard</span></button>
+        <button data-tab="projects"><i class="fas fa-hard-hat"></i> <span data-i18n="navProjects">Projekti</span></button>
+        <button data-tab="workers"><i class="fas fa-users"></i> <span data-i18n="navWorkers">Radnici</span></button>
+        <button data-tab="worker-register"><i class="fas fa-user-plus"></i> <span data-i18n="navRegister">Prijava radnika</span> <span class="badge-count" id="newWorkerBadge" style="display:none;">●</span></button>
+        <button data-tab="finance"><i class="fas fa-coins"></i> <span data-i18n="navFinance">Finansije</span></button>
+        <button data-tab="email"><i class="fas fa-envelope"></i> <span data-i18n="navEmail">Pošta</span> <span class="badge-count" id="emailBadge">0</span></button>
+        <button data-tab="report"><i class="fas fa-file-alt"></i> <span data-i18n="navReport">Izveštaj</span></button>
+    </div>
+
+    <!-- ========= DASHBOARD ========= -->
+    <section id="dashboard" class="section active">
+        <div class="grid">
+            <div class="card"><div class="card-title"><span data-i18n="activeProjects">Aktivni projekti</span> <i class="fas fa-hard-hat"></i></div><div class="card-value" id="projectCount">3</div><div style="margin-top:12px;font-size:14px;color:#aaa;"><span class="status-dot status-green"></span> <span data-i18n="onPlan">2 po planu</span> · <span class="status-dot status-red"></span> <span data-i18n="overBudget">1 prekoračen</span></div></div>
+            <div class="card"><div class="card-title"><span data-i18n="totalMargin">Ukupna marža</span> <i class="fas fa-percent"></i></div><div class="card-value" id="marginValue">18.4% <small class="trend-down">▼ 2.1%</small></div><div style="margin-top:12px;font-size:14px;color:#aaa;" data-i18n="target">Cilj: 22%</div></div>
+            <div class="card"><div class="card-title"><span data-i18n="workersOnSite">Radnici na terenu</span> <i class="fas fa-user-hard-hat"></i></div><div class="card-value" id="workerCount">24</div><div style="margin-top:12px;font-size:14px;color:#aaa;"><i class="fas fa-user-slash" style="color:#f44336;"></i> <span data-i18n="onSickLeave">1 na bolovanju</span></div></div>
+            <div class="card"><div class="card-title"><span data-i18n="monthlyRevenue">Prihodi ovog meseca</span> <i class="fas fa-euro-sign"></i></div><div class="card-value">€142.000 <small class="trend-up">▲ 8%</small></div><div style="margin-top:12px;font-size:14px;color:#aaa;" data-i18n="projection">Projekcija: €156.000</div></div>
+        </div>
+        <div class="grid" style="grid-template-columns:2fr 1fr;">
+            <div class="card"><div class="card-title"><span data-i18n="materialChart">📊 Potrošnja materijala</span></div><div class="chart-container"><canvas id="dashChart"></canvas></div></div>
+            <div class="card"><div class="card-title"><span data-i18n="urgentRecommendations">🔥 Hitne preporuke</span></div><ul style="list-style:none;padding:0;font-size:14px;line-height:2;" id="recommendationsList"></ul></div>
+        </div>
+        <div class="card" style="margin-top:20px;">
+            <div class="card-title"><span data-i18n="voiceCommand">🗣️ Glasovna naredba (demo)</span></div>
+            <button id="voiceBtn" class="voice-btn"><i class="fas fa-microphone"></i> <span data-i18n="clickAndSpeak">Klikni i govori</span></button>
+            <div id="voiceOutput" class="voice-output" data-i18n="voicePlaceholder">Ovde će se prikazati vaša naredba...</div>
+        </div>
+    </section>
+
+    <!-- ========= PROJEKTI ========= -->
+    <section id="projects" class="section">
+        <div class="card">
+            <div class="card-title"><span data-i18n="projectList">📋 Lista projekata</span> <button class="btn" onclick="addProject()"><i class="fas fa-plus"></i> <span data-i18n="add">Dodaj</span></button></div>
+            <div class="input-group">
+                <input id="projName" placeholder="Naziv" value="Novi stan Beč" />
+                <input id="projBudget" placeholder="Budžet (€)" value="45000" />
+                <input id="projCost" placeholder="Trošak (€)" value="38000" />
+                <button onclick="addProject()"><i class="fas fa-plus"></i> <span data-i18n="add">Dodaj</span></button>
+            </div>
+            <div class="table-wrap"><table><thead><tr><th data-i18n="projectName">Projekat</th><th data-i18n="budget">Budžet</th><th data-i18n="cost">Trošak</th><th data-i18n="status">Status</th><th data-i18n="action">Akcija</th></tr></thead><tbody id="projectBody"></tbody></table></div>
+        </div>
+    </section>
+
+    <!-- ========= RADNICI (Pregled) ========= -->
+    <section id="workers" class="section">
+        <div class="card">
+            <div class="card-title"><span data-i18n="workersTitle">👷 Radnici</span> <button class="btn" onclick="addWorker()"><i class="fas fa-plus"></i> <span data-i18n="add">Dodaj</span></button></div>
+            <div class="input-group">
+                <input id="workerName" placeholder="Ime" value="Marko Novi" />
+                <input id="workerSpec" placeholder="Specijalnost" value="Keramika" />
+                <input id="workerRate" placeholder="Satnica (€)" value="28" />
+                <button onclick="addWorker()"><i class="fas fa-plus"></i> <span data-i18n="add">Dodaj</span></button>
+            </div>
+            <div class="table-wrap"><table><thead><tr><th data-i18n="name">Ime</th><th data-i18n="specialty">Specijalnost</th><th data-i18n="hourlyRate">Satnica</th><th data-i18n="project">Projekat</th><th data-i18n="status">Status</th><th data-i18n="action">Akcija</th></tr></thead><tbody id="workerBody"></tbody></table></div>
+        </div>
+    </section>
+
+    <!-- ========= PRIJAVA RADNIKA (nova forma) ========= -->
+    <section id="worker-register" class="section">
+        <div class="card">
+            <div class="card-title"><span data-i18n="registerTitle">📝 Prijava novog radnika</span> <span class="badge" style="background:#1a3a1a;color:#4caf50;"><i class="fas fa-check-circle"></i> Besplatno</span></div>
+            <div class="worker-form" id="workerRegisterForm">
+                <div class="form-row">
+                    <label>Ime i prezime *</label>
+                    <input type="text" id="regIme" placeholder="Unesite ime i prezime" />
+                </div>
+                <div class="form-row">
+                    <label>Godine *</label>
+                    <input type="number" id="regGodine" placeholder="18-70" min="18" max="70" />
+                </div>
+                <div class="form-row">
+                    <label>Glavna struka *</label>
+                    <select id="regStruka">
+                        <option value="">Izaberi...</option>
+                        <option value="zidar">Zidar</option>
+                        <option value="elektricar">Električar</option>
+                        <option value="keramicar">Keramičar</option>
+                        <option value="vodoinstalater">Vodoinstalater</option>
+                        <option value="gipsar">Gipsar</option>
+                        <option value="molers">Molers</option>
+                        <option value="stolar">Stolar</option>
+                        <option value="armirac">Armirač</option>
+                        <option value="drugi">Drugi</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label>Dodatne veštine</label>
+                    <input type="text" id="regVestine" placeholder="npr. keramika, gips, pločice" />
+                </div>
+                <div class="form-row">
+                    <label>Telefon *</label>
+                    <input type="tel" id="regTelefon" placeholder="+381 63 123 456" />
+                </div>
+                <div class="form-row">
+                    <label>Email</label>
+                    <input type="email" id="regEmail" placeholder="email@primer.com" />
+                </div>
+                <div class="form-row">
+                    <label>Grad *</label>
+                    <input type="text" id="regGrad" placeholder="Beograd, Novi Sad..." />
+                </div>
+                <div class="form-row">
+                    <label>📎 Upload CV</label>
+                    <input type="file" id="regCv" accept=".pdf,.doc,.docx" />
+                </div>
+                <div class="checkbox-row">
+                    <input type="checkbox" id="regSaglasnost" />
+                    <label for="regSaglasnost">Saglasan/na sam sa obradom podataka *</label>
+                </div>
+                <button class="btn" onclick="registrujRadnika()"><i class="fas fa-paper-plane"></i> <span data-i18n="submit">Pošalji prijavu</span></button>
+                <div id="regPoruka" style="display:none; margin-top:15px; padding:15px; background:#1a3a1a; border-radius:12px; color:#4caf50; border-left:4px solid #4caf50;">
+                    ✅ Prijava uspešno poslata! Radnik je dodat u bazu.
+                </div>
+            </div>
+        </div>
+
+        <!-- Nova prijava -> Alert -->
+        <div class="card" style="margin-top:20px;">
+            <div class="card-title"><span>🔔 <span data-i18n="alertsTitle">Alerti od novih prijava</span></span> <span id="alertCount" class="badge alert-badge" style="display:none;">0</span></div>
+            <div id="alertList" style="max-height:300px; overflow-y:auto;">
+                <p style="color:#666; padding:10px;" data-i18n="noAlerts">Nema novih alerta.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========= FINANSIJE ========= -->
+    <section id="finance" class="section">
+        <div class="grid" style="grid-template-columns:1fr 1fr;">
+            <div class="card"><div class="card-title"><span data-i18n="incomeExpense">💰 Prihodi / Rashodi</span></div><div class="chart-container"><canvas id="financeChart"></canvas></div></div>
+            <div class="card"><div class="card-title"><span data-i18n="marginPerProject">📈 Marža po projektu</span></div><div class="chart-container"><canvas id="marginChart"></canvas></div></div>
+        </div>
+        <div class="card">
+            <div class="card-title"><span data-i18n="dailyCostEntry">📅 Dnevni unos troškova</span></div>
+            <div class="input-group">
+                <input id="costDate" type="date" value="2026-09-05" />
+                <input id="costProject" placeholder="Projekat" value="Kreuzberg" />
+                <input id="costDesc" placeholder="Stavka" value="Lepak" />
+                <input id="costAmount" placeholder="Iznos (€)" value="420" />
+                <button onclick="addCost()"><i class="fas fa-plus"></i> <span data-i18n="add">Unesi</span></button>
+            </div>
+            <div class="table-wrap"><table><thead><tr><th data-i18n="date">Datum</th><th data-i18n="project">Projekat</th><th data-i18n="item">Stavka</th><th data-i18n="amount">Iznos</th></tr></thead><tbody id="costBody"></tbody></table></div>
+        </div>
+    </section>
+
+    <!-- ========= EMAIL / POŠTA ========= -->
+    <section id="email" class="section">
+        <div class="card">
+            <div class="card-title">
+                <span><i class="fas fa-inbox"></i> <span data-i18n="emailInbox">Pristigle poruke</span></span>
+                <button class="btn btn-small" onclick="refreshEmails()"><i class="fas fa-sync"></i> <span data-i18n="refresh">Osveži</span></button>
+            </div>
+            <div id="emailList">
+                <!-- Emails will be rendered here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- ========= IZVEŠTAJ ========= -->
+    <section id="report" class="section">
+        <div class="card">
+            <div class="card-title"><span data-i18n="dailyReport">📄 Dnevni AI izveštaj</span> <button class="btn" onclick="refreshReport()"><i class="fas fa-sync"></i> <span data-i18n="refresh">Osveži</span></button></div>
+            <div id="reportContent" style="background:#121212; padding:20px; border-radius:16px; border-left:6px solid #c87a2b; white-space:pre-wrap; font-size:14px; line-height:1.8;">⏳ Učitavanje...</div>
+        </div>
+    </section>
+
+    <div class="footer"><p>🏗️ BauMind AI – Kompletna verzija | <a href="#" onclick="sendDemoRequest()" data-i18n="contactUs">Kontaktirajte nas</a> | © 2026</p></div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
